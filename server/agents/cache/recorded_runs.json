@@ -1,0 +1,73 @@
+{
+  "triage": {
+    "severity": "P2",
+    "affected_systems": [
+      "course-service",
+      "assignment-upload",
+      "lms-core"
+    ],
+    "blast_radius": "Students enrolled in active courses attempting assignment uploads and accessing course materials since 2:00 PM; critical academic workflows blocked.",
+    "confidence": 0.92
+  },
+  "root_cause": {
+    "probable_root_cause": "The course-service API crashed or is returning HTTP 500 Internal Server Error on assignment endpoint routes, causing the frontend upload client to hang waiting for an unhandled response while the assignment view fails to render.",
+    "confidence": 0.88,
+    "confidence_rationale": "Direct reports confirm HTTP 500 status on course page navigation combined with indefinite client-side upload spinner, indicating an unhandled server-side rejection or downstream dependency failure on the assignment storage controller.",
+    "supporting_evidence": [
+      {
+        "evidence_id": "CURRENT_EVIDENCE_1",
+        "quote": "course page shows a 500 error and the upload button spins forever"
+      },
+      {
+        "evidence_id": "CURRENT_EVIDENCE_1",
+        "quote": "Students cannot open assignment pages since 2pm"
+      }
+    ],
+    "contradicting_evidence": [],
+    "alternative_hypotheses": [
+      {
+        "hypothesis": "Frontend client routing defect or asset bundle load failure",
+        "likelihood": "Low",
+        "reason_discounted": "An explicit 500 HTTP server status was observed, which is originating from server-side infrastructure rather than static client bundle failures."
+      },
+      {
+        "hypothesis": "Auth token expiration during upload",
+        "likelihood": "Low",
+        "reason_discounted": "Authentication failures return 401 Unauthorized or 403 Forbidden, whereas the page triggers 500 Internal Server Error."
+      }
+    ],
+    "recommended_next_checks": [
+      "Inspect course-service and assignment backend application logs for unhandled exceptions or 500 tracebacks around 14:00.",
+      "Check connection pool metrics for the backend database and file storage S3 bucket credentials.",
+      "Verify health status of reverse proxy and upstream LMS microservice routing."
+    ]
+  },
+  "router": {
+    "team": "Backend",
+    "reasons": [
+      "The primary failure symptom is an HTTP 500 error returned by course-service and lms-core.",
+      "Backend owns the API gateway and course-service controllers responsible for assignment page rendering and upload orchestration."
+    ]
+  },
+  "writer": {
+    "bug_report": {
+      "title": "Course Page 500 Error and Indefinite Assignment Upload Spinner",
+      "summary": "Students are unable to access course assignment pages and submit work due to server-side 500 errors starting at 14:00.",
+      "steps_to_reproduce": [
+        "Log into LMS student portal.",
+        "Navigate to any active course page.",
+        "Click on the assignment tab or view assignment details.",
+        "Attempt to upload an assignment submission file."
+      ],
+      "expected": "Assignment page loads promptly and file upload completes with confirmation modal.",
+      "actual": "Page responds with HTTP 500 error; upload button enters indefinite spinning state without timeout.",
+      "suspected_component": "course-service / assignment-upload API handler"
+    },
+    "suggested_fixes": [
+      "Add proper error boundaries and request timeouts to the frontend upload client to prevent infinite spinners on 500 responses.",
+      "Investigate and patch backend course-service unhandled promise rejection or database pool timeout on assignment routes.",
+      "Implement circuit breaker and fallback response for assignment metadata retrieval."
+    ],
+    "executive_summary": "At approximately 14:00, an incident occurred preventing students from opening course assignment pages and uploading coursework. The system returned HTTP 500 errors on course endpoints. The incident is classified as Severity P2 with the Backend and File Service teams mobilized. Triage and root cause analysis pinpoint an upstream server failure in the assignment API handler. Remediation includes backend exception patching and client upload timeout safeguards."
+  }
+}
