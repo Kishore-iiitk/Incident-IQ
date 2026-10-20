@@ -6,6 +6,7 @@ import { redactSensitiveData } from '../utils/redactor.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DEFAULT_INDEX_PATH = path.join(__dirname, 'kb_index.json');
+export const DEFAULT_RAG_MIN_SCORE = 0.41;
 
 /**
  * Compute cosine similarity between two numerical vectors.
@@ -36,9 +37,10 @@ export function cosineSimilarity(vecA, vecB) {
  * @param {Function} [options.embedFn] - Optional injected embedding function: (text) => Promise<number[]>.
  * @param {string} [options.backend] - 'local' (default) or 'atlas'.
  * @param {string} [options.indexPath] - Custom path to kb_index.json.
+ * @param {number} [options.minScore] - Minimum similarity score threshold (default: env RAG_MIN_SCORE or 0.41).
  * @returns {Promise<Array<{id: string, family: string, service: string, title: string, symptoms: string, root_cause: string, resolution: string, score: number}>>}
  */
-export async function retrieve(queryText, { k = 3, embedFn, backend, indexPath } = {}) {
+export async function retrieve(queryText, { k = 3, embedFn, backend, indexPath, minScore } = {}) {
   const activeBackend = backend || process.env.RAG_BACKEND || 'local';
 
   if (activeBackend === 'atlas') {
@@ -128,8 +130,16 @@ export async function retrieve(queryText, { k = 3, embedFn, backend, indexPath }
     };
   });
 
-  // Sort descending by similarity score
-  scored.sort((a, b) => b.score - a.score);
+  const envMin = process.env.RAG_MIN_SCORE !== undefined && process.env.RAG_MIN_SCORE !== ''
+    ? parseFloat(process.env.RAG_MIN_SCORE)
+    : DEFAULT_RAG_MIN_SCORE;
+  const effectiveMinScore = minScore !== undefined ? Number(minScore) : envMin;
 
-  return scored.slice(0, k);
+  // Filter out results strictly below the minimum score threshold
+  const qualifying = isNaN(effectiveMinScore) ? scored : scored.filter(item => item.score >= effectiveMinScore);
+
+  // Sort descending by similarity score
+  qualifying.sort((a, b) => b.score - a.score);
+
+  return qualifying.slice(0, k);
 }

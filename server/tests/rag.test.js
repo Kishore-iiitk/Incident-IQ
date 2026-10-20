@@ -168,4 +168,41 @@ describe('RAG Retrieval & Processor Suite', () => {
       process.env.ML_SERVICE_URL = originalUrl;
     }
   });
+
+  test('retrieve() drops results below RAG_MIN_SCORE threshold', async () => {
+    // Target KB-003, which has top scores: 1.0 (KB-003), 0.5713 (KB-005), 0.5537 (KB-001), 0.4894 (KB-002)
+    const targetIncident = realIndexData.incidents.find(i => i.id === 'KB-003');
+    const injectedEmbedFn = async () => targetIncident.embedding;
+
+    // 1. With standard threshold 0.41, returns top 3 (1.0, ~0.57, ~0.55)
+    const normalResults = await retrieve('Session login loop', { k: 5, embedFn: injectedEmbedFn });
+    assert.ok(normalResults.length >= 3, 'Should return all results >= 0.41');
+    assert.ok(normalResults.every(r => r.score >= 0.41), 'All items must meet default threshold');
+
+    // 2. Set strict RAG_MIN_SCORE env var to 0.56
+    const origMin = process.env.RAG_MIN_SCORE;
+    process.env.RAG_MIN_SCORE = '0.56';
+
+    try {
+      const filteredResults = await retrieve('Session login loop', { k: 5, embedFn: injectedEmbedFn });
+      // Only KB-003 (1.0) and KB-005 (0.5713) should qualify; KB-001 (0.5537) and KB-002 (0.4894) must be dropped
+      assert.equal(filteredResults.length, 2, 'Only items >= 0.56 should remain');
+      assert.ok(filteredResults.every(r => r.score >= 0.56), 'All returned items must be >= 0.56');
+
+      // 3. Set threshold above all items except exact match (> 0.90)
+      const exactOnly = await retrieve('Session login loop', { k: 5, embedFn: injectedEmbedFn, minScore: 0.90 });
+      assert.equal(exactOnly.length, 1, 'Only exact match should exceed 0.90');
+      assert.equal(exactOnly[0].id, 'KB-003');
+
+      // 4. Threshold higher than any match returns empty list
+      const noneQualify = await retrieve('Session login loop', { k: 5, embedFn: injectedEmbedFn, minScore: 1.05 });
+      assert.deepEqual(noneQualify, [], 'Results below minScore must return empty array');
+    } finally {
+      if (origMin !== undefined) {
+        process.env.RAG_MIN_SCORE = origMin;
+      } else {
+        delete process.env.RAG_MIN_SCORE;
+      }
+    }
+  });
 });

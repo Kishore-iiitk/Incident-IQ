@@ -1,0 +1,32 @@
+[
+  {
+    "query_id": "NEG-01",
+    "query": "The ceiling projector in lecture hall 302 won't power on and the HDMI wall port has a bent pin.",
+    "category": "classroom_av_hardware",
+    "author": "Written by Antigravity (out-of-scope negative query, not a chatbot dataset)"
+  },
+  {
+    "query_id": "NEG-02",
+    "query": "How do I renew my semester campus parking permit and register a second vehicle license plate?",
+    "category": "campus_parking_services",
+    "author": "Written by Antigravity (out-of-scope negative query, not a chatbot dataset)"
+  },
+  {
+    "query_id": "NEG-03",
+    "query": "The library online catalogue system returns zero results when searching for physical reserve textbooks by ISBN number.",
+    "category": "library_catalogue_search",
+    "author": "Written by Antigravity (out-of-scope negative query, not a chatbot dataset)"
+  },
+  {
+    "query_id": "NEG-04",
+    "query": "I forgot my dorm room ethernet portal password and the hostel wifi WPA2 Enterprise login is rejecting my credentials.",
+    "category": "hostel_network_credentials",
+    "author": "Written by Antigravity (out-of-scope negative query, not a chatbot dataset)"
+  },
+  {
+    "query_id": "NEG-05",
+    "query": "The shared laser printer in the second-floor computer lab has a jammed paper tray and three dozen print jobs stuck in the queue.",
+    "category": "lab_printer_hardware",
+    "author": "Written by Antigravity (out-of-scope negative query, not a chatbot dataset)"
+  }
+]

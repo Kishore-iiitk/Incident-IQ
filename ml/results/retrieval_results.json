@@ -1,0 +1,1113 @@
+{
+  "metadata": {
+    "num_queries": 15,
+    "num_incidents": 30,
+    "num_negative_queries": 5,
+    "significance_note": "With 15 queries and 30 incidents, 1 query corresponds to ~6.67 percentage points. Differences between methods may not be statistically significant."
+  },
+  "overall_metrics": {
+    "bm25": {
+      "recall_at_1": 0.8,
+      "recall_at_3": 0.9333333333333333,
+      "recall_at_5": 0.9333333333333333,
+      "mrr": 0.8727272727272728,
+      "sibling_confusion_rate": 0.2,
+      "cross_family_error_rate": 0.0
+    },
+    "vector": {
+      "recall_at_1": 0.7333333333333333,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "mrr": 0.8555555555555555,
+      "sibling_confusion_rate": 0.26666666666666666,
+      "cross_family_error_rate": 0.0
+    }
+  },
+  "per_family_metrics": {
+    "grades_issue": {
+      "query_count": 2,
+      "bm25": {
+        "recall_at_1": 0.5,
+        "recall_at_3": 0.5,
+        "recall_at_5": 0.5,
+        "mrr": 0.5454545454545454,
+        "sibling_confusion_rate": 0.5,
+        "cross_family_error_rate": 0.0
+      },
+      "vector": {
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "sibling_confusion_rate": 0.0,
+        "cross_family_error_rate": 0.0
+      }
+    },
+    "login_failure": {
+      "query_count": 3,
+      "bm25": {
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "sibling_confusion_rate": 0.0,
+        "cross_family_error_rate": 0.0
+      },
+      "vector": {
+        "recall_at_1": 0.3333333333333333,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 0.611111111111111,
+        "sibling_confusion_rate": 0.6666666666666666,
+        "cross_family_error_rate": 0.0
+      }
+    },
+    "notification_failure": {
+      "query_count": 2,
+      "bm25": {
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "sibling_confusion_rate": 0.0,
+        "cross_family_error_rate": 0.0
+      },
+      "vector": {
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "sibling_confusion_rate": 0.0,
+        "cross_family_error_rate": 0.0
+      }
+    },
+    "slow_or_timeout": {
+      "query_count": 3,
+      "bm25": {
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "sibling_confusion_rate": 0.0,
+        "cross_family_error_rate": 0.0
+      },
+      "vector": {
+        "recall_at_1": 0.6666666666666666,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 0.8333333333333334,
+        "sibling_confusion_rate": 0.3333333333333333,
+        "cross_family_error_rate": 0.0
+      }
+    },
+    "upload_failure": {
+      "query_count": 3,
+      "bm25": {
+        "recall_at_1": 0.6666666666666666,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 0.8333333333333334,
+        "sibling_confusion_rate": 0.3333333333333333,
+        "cross_family_error_rate": 0.0
+      },
+      "vector": {
+        "recall_at_1": 0.6666666666666666,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 0.8333333333333334,
+        "sibling_confusion_rate": 0.3333333333333333,
+        "cross_family_error_rate": 0.0
+      }
+    },
+    "video_playback": {
+      "query_count": 2,
+      "bm25": {
+        "recall_at_1": 0.5,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 0.75,
+        "sibling_confusion_rate": 0.5,
+        "cross_family_error_rate": 0.0
+      },
+      "vector": {
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr": 1.0,
+        "sibling_confusion_rate": 0.0,
+        "cross_family_error_rate": 0.0
+      }
+    }
+  },
+  "score_threshold_analysis": {
+    "real_top1_range": [
+      0.4139,
+      0.7305
+    ],
+    "negative_top1_range": [
+      0.2337,
+      0.4087
+    ],
+    "ranges_overlap": false,
+    "recommended_rag_min_score": 0.41,
+    "negative_top1_details": [
+      {
+        "query_id": "NEG-01",
+        "query": "The ceiling projector in lecture hall 302 won't power on and the HDMI wall port has a bent pin.",
+        "category": "classroom_av_hardware",
+        "top1_id": "KB-029",
+        "top1_title": "Video Origin Read Permission Removed",
+        "top1_score": 0.3167
+      },
+      {
+        "query_id": "NEG-02",
+        "query": "How do I renew my semester campus parking permit and register a second vehicle license plate?",
+        "category": "campus_parking_services",
+        "top1_id": "KB-030",
+        "top1_title": "Digital Rights License Endpoint Unavailable",
+        "top1_score": 0.2337
+      },
+      {
+        "query_id": "NEG-03",
+        "query": "The library online catalogue system returns zero results when searching for physical reserve textbooks by ISBN number.",
+        "category": "library_catalogue_search",
+        "top1_id": "KB-017",
+        "top1_title": "Stale Gradebook Read Replica",
+        "top1_score": 0.4087
+      },
+      {
+        "query_id": "NEG-04",
+        "query": "I forgot my dorm room ethernet portal password and the hostel wifi WPA2 Enterprise login is rejecting my credentials.",
+        "category": "hostel_network_credentials",
+        "top1_id": "KB-002",
+        "top1_title": "Authentication Token Rejected Due to Clock Drift",
+        "top1_score": 0.3926
+      },
+      {
+        "query_id": "NEG-05",
+        "query": "The shared laser printer in the second-floor computer lab has a jammed paper tray and three dozen print jobs stuck in the queue.",
+        "category": "lab_printer_hardware",
+        "top1_id": "KB-010",
+        "top1_title": "File Scanning Dependency Unavailable",
+        "top1_score": 0.2913
+      }
+    ]
+  },
+  "query_evaluations": [
+    {
+      "query_id": "Q-01",
+      "expected_kb_id": "KB-001",
+      "expected_title": "Expired SAML Signing Certificate",
+      "family": "login_failure",
+      "query_text": "[ALERT] Authentication monitoring reports a sharp spike in SAML assertion validation failures accompanied by a massive drop in successful logins, as users attempting to access their dashboard are redirected to the sign-in page.",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-001",
+          "title": "Expired SAML Signing Certificate",
+          "family": "login_failure",
+          "score": 30.8307,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-004",
+          "title": "Exhausted Database Connections",
+          "family": "login_failure",
+          "score": 19.9196,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-002",
+          "title": "Authentication Token Rejected Due to Clock Drift",
+          "family": "login_failure",
+          "score": 16.9307,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-001",
+          "title": "Expired SAML Signing Certificate",
+          "family": "login_failure",
+          "score": 0.6774,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-002",
+          "title": "Authentication Token Rejected Due to Clock Drift",
+          "family": "login_failure",
+          "score": 0.5619,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-005",
+          "title": "Password Hash Algorithm Configuration Drift",
+          "family": "login_failure",
+          "score": 0.5254,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": true
+    },
+    {
+      "query_id": "Q-02",
+      "expected_kb_id": "KB-003",
+      "expected_title": "Session Eviction During Login",
+      "family": "login_failure",
+      "query_text": "Subject: Can't stay logged in. Every time I put in my password and get past the main sign-in step, the page just loops right back to the login screen before I can even see my classes!",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-003",
+          "title": "Session Eviction During Login",
+          "family": "login_failure",
+          "score": 15.4916,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-004",
+          "title": "Exhausted Database Connections",
+          "family": "login_failure",
+          "score": 10.5832,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-001",
+          "title": "Expired SAML Signing Certificate",
+          "family": "login_failure",
+          "score": 10.3435,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-002",
+          "title": "Authentication Token Rejected Due to Clock Drift",
+          "family": "login_failure",
+          "score": 0.4139,
+          "is_expected": false
+        },
+        {
+          "rank": 2,
+          "id": "KB-003",
+          "title": "Session Eviction During Login",
+          "family": "login_failure",
+          "score": 0.4092,
+          "is_expected": true
+        },
+        {
+          "rank": 3,
+          "id": "KB-026",
+          "title": "Invalid Signed Video URL",
+          "family": "video_playback",
+          "score": 0.4071,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": false
+    },
+    {
+      "query_id": "Q-03",
+      "expected_kb_id": "KB-005",
+      "expected_title": "Password Hash Algorithm Configuration Drift",
+      "family": "login_failure",
+      "query_text": "Ticket: Following the latest software push, telemetry graphs show an unexpected spike in credential check errors blocking valid users, while rates for nonexistent usernames show no unusual movement.",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-005",
+          "title": "Password Hash Algorithm Configuration Drift",
+          "family": "login_failure",
+          "score": 12.8482,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-006",
+          "title": "Reverse Proxy Request Body Limit",
+          "family": "upload_failure",
+          "score": 7.6724,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-004",
+          "title": "Exhausted Database Connections",
+          "family": "login_failure",
+          "score": 7.4103,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-004",
+          "title": "Exhausted Database Connections",
+          "family": "login_failure",
+          "score": 0.5412,
+          "is_expected": false
+        },
+        {
+          "rank": 2,
+          "id": "KB-002",
+          "title": "Authentication Token Rejected Due to Clock Drift",
+          "family": "login_failure",
+          "score": 0.5273,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-005",
+          "title": "Password Hash Algorithm Configuration Drift",
+          "family": "login_failure",
+          "score": 0.4973,
+          "is_expected": true
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": false
+    },
+    {
+      "query_id": "Q-04",
+      "expected_kb_id": "KB-006",
+      "expected_title": "Reverse Proxy Request Body Limit",
+      "family": "upload_failure",
+      "query_text": "Hey team, whenever anyone tries turning in their coursework on the assignment submission page, the browser throws an HTTP 413 error and the document never shows up.",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-006",
+          "title": "Reverse Proxy Request Body Limit",
+          "family": "upload_failure",
+          "score": 18.6093,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-027",
+          "title": "Unsupported Transcoded Video Codec",
+          "family": "video_playback",
+          "score": 9.1159,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-028",
+          "title": "HTTP Range Headers Stripped by Proxy",
+          "family": "video_playback",
+          "score": 8.7928,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-006",
+          "title": "Reverse Proxy Request Body Limit",
+          "family": "upload_failure",
+          "score": 0.5981,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-010",
+          "title": "File Scanning Dependency Unavailable",
+          "family": "upload_failure",
+          "score": 0.5016,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-019",
+          "title": "Timezone Boundary Error in Submission Eligibility",
+          "family": "grades_issue",
+          "score": 0.4557,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": true
+    },
+    {
+      "query_id": "Q-05",
+      "expected_kb_id": "KB-008",
+      "expected_title": "Temporary Disk Exhaustion",
+      "family": "upload_failure",
+      "query_text": "[ALERT] Node-level storage telemetry indicates filesystem capacity exhaustion across worker instances handling attachments, generating recurring temporary file creation errors during student uploads.",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-008",
+          "title": "Temporary Disk Exhaustion",
+          "family": "upload_failure",
+          "score": 12.2796,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-009",
+          "title": "Upload Metadata Transaction Timeout",
+          "family": "upload_failure",
+          "score": 6.7016,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-007",
+          "title": "Expired Object Storage Credentials",
+          "family": "upload_failure",
+          "score": 5.8843,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-008",
+          "title": "Temporary Disk Exhaustion",
+          "family": "upload_failure",
+          "score": 0.7142,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-010",
+          "title": "File Scanning Dependency Unavailable",
+          "family": "upload_failure",
+          "score": 0.5582,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-009",
+          "title": "Upload Metadata Transaction Timeout",
+          "family": "upload_failure",
+          "score": 0.5444,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": true
+    },
+    {
+      "query_id": "Q-06",
+      "expected_kb_id": "KB-010",
+      "expected_title": "File Scanning Dependency Unavailable",
+      "family": "upload_failure",
+      "query_text": "Hello support team, I've been trying for the last half hour to upload my project file, but every single attempt results in an error message and the document never attaches. Can someone please look into this?",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-006",
+          "title": "Reverse Proxy Request Body Limit",
+          "family": "upload_failure",
+          "score": 11.1333,
+          "is_expected": false
+        },
+        {
+          "rank": 2,
+          "id": "KB-010",
+          "title": "File Scanning Dependency Unavailable",
+          "family": "upload_failure",
+          "score": 10.8119,
+          "is_expected": true
+        },
+        {
+          "rank": 3,
+          "id": "KB-007",
+          "title": "Expired Object Storage Credentials",
+          "family": "upload_failure",
+          "score": 9.8979,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-007",
+          "title": "Expired Object Storage Credentials",
+          "family": "upload_failure",
+          "score": 0.5277,
+          "is_expected": false
+        },
+        {
+          "rank": 2,
+          "id": "KB-010",
+          "title": "File Scanning Dependency Unavailable",
+          "family": "upload_failure",
+          "score": 0.5007,
+          "is_expected": true
+        },
+        {
+          "rank": 3,
+          "id": "KB-008",
+          "title": "Temporary Disk Exhaustion",
+          "family": "upload_failure",
+          "score": 0.4851,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": false,
+      "vector_correct_top1": false
+    },
+    {
+      "query_id": "Q-07",
+      "expected_kb_id": "KB-011",
+      "expected_title": "Missing Index on Course Enrollment Query",
+      "family": "slow_or_timeout",
+      "query_text": "Issue report: Database performance dashboards display a sharp increase in request latency and prolonged query execution times specifically when fetching course enrollment data for student dashboards.",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-011",
+          "title": "Missing Index on Course Enrollment Query",
+          "family": "slow_or_timeout",
+          "score": 27.9822,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-013",
+          "title": "Cache Stampede After Broad Invalidation",
+          "family": "slow_or_timeout",
+          "score": 12.2528,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-012",
+          "title": "HTTP Connection Pool Leak",
+          "family": "slow_or_timeout",
+          "score": 7.2228,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-011",
+          "title": "Missing Index on Course Enrollment Query",
+          "family": "slow_or_timeout",
+          "score": 0.7305,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-014",
+          "title": "Slow DNS Resolution for Integration Host",
+          "family": "slow_or_timeout",
+          "score": 0.5504,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-015",
+          "title": "Synchronous Third-Party Calendar Dependency",
+          "family": "slow_or_timeout",
+          "score": 0.5402,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": true
+    },
+    {
+      "query_id": "Q-08",
+      "expected_kb_id": "KB-013",
+      "expected_title": "Cache Stampede After Broad Invalidation",
+      "family": "slow_or_timeout",
+      "query_text": "Is anyone else noticing that course and timetable views are crawling right now, and the database metrics are showing a massive spike in SQL queries alongside a dead cache hit rate?",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-013",
+          "title": "Cache Stampede After Broad Invalidation",
+          "family": "slow_or_timeout",
+          "score": 20.9164,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-004",
+          "title": "Exhausted Database Connections",
+          "family": "login_failure",
+          "score": 12.3307,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-014",
+          "title": "Slow DNS Resolution for Integration Host",
+          "family": "slow_or_timeout",
+          "score": 9.9636,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-011",
+          "title": "Missing Index on Course Enrollment Query",
+          "family": "slow_or_timeout",
+          "score": 0.6165,
+          "is_expected": false
+        },
+        {
+          "rank": 2,
+          "id": "KB-013",
+          "title": "Cache Stampede After Broad Invalidation",
+          "family": "slow_or_timeout",
+          "score": 0.5984,
+          "is_expected": true
+        },
+        {
+          "rank": 3,
+          "id": "KB-015",
+          "title": "Synchronous Third-Party Calendar Dependency",
+          "family": "slow_or_timeout",
+          "score": 0.4426,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": false
+    },
+    {
+      "query_id": "Q-09",
+      "expected_kb_id": "KB-015",
+      "expected_title": "Synchronous Third-Party Calendar Dependency",
+      "family": "slow_or_timeout",
+      "query_text": "[ALERT] Performance telemetry flags excessive response times on the main student dashboard caused by protracted waiting periods for external calendar API calls.",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-015",
+          "title": "Synchronous Third-Party Calendar Dependency",
+          "family": "slow_or_timeout",
+          "score": 15.8839,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-006",
+          "title": "Reverse Proxy Request Body Limit",
+          "family": "upload_failure",
+          "score": 5.9765,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-013",
+          "title": "Cache Stampede After Broad Invalidation",
+          "family": "slow_or_timeout",
+          "score": 5.3173,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-015",
+          "title": "Synchronous Third-Party Calendar Dependency",
+          "family": "slow_or_timeout",
+          "score": 0.5919,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-014",
+          "title": "Slow DNS Resolution for Integration Host",
+          "family": "slow_or_timeout",
+          "score": 0.4518,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-011",
+          "title": "Missing Index on Course Enrollment Query",
+          "family": "slow_or_timeout",
+          "score": 0.4324,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": true
+    },
+    {
+      "query_id": "Q-10",
+      "expected_kb_id": "KB-017",
+      "expected_title": "Stale Gradebook Read Replica",
+      "family": "grades_issue",
+      "query_text": "Dear instructor, my professor posted the grades for our quiz yesterday, but when I open the gradebook view in the portal, none of the new scores show up for me. Could my account be out of sync?",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-018",
+          "title": "Incorrect Assessment Weight Configuration",
+          "family": "grades_issue",
+          "score": 12.0851,
+          "is_expected": false
+        },
+        {
+          "rank": 2,
+          "id": "KB-020",
+          "title": "Gradebook Cache Not Invalidated",
+          "family": "grades_issue",
+          "score": 7.8747,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-016",
+          "title": "Grade Import Consumer Schema Mismatch",
+          "family": "grades_issue",
+          "score": 7.7916,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-017",
+          "title": "Stale Gradebook Read Replica",
+          "family": "grades_issue",
+          "score": 0.5853,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-020",
+          "title": "Gradebook Cache Not Invalidated",
+          "family": "grades_issue",
+          "score": 0.5766,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-016",
+          "title": "Grade Import Consumer Schema Mismatch",
+          "family": "grades_issue",
+          "score": 0.5322,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": false,
+      "vector_correct_top1": true
+    },
+    {
+      "query_id": "Q-11",
+      "expected_kb_id": "KB-019",
+      "expected_title": "Timezone Boundary Error in Submission Eligibility",
+      "family": "grades_issue",
+      "query_text": "Defect ticket: Work uploaded close to the cutoff time is getting excluded from evaluation batches due to incorrect offset comparisons, leaving student records absent from the gradebook.",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-019",
+          "title": "Timezone Boundary Error in Submission Eligibility",
+          "family": "grades_issue",
+          "score": 12.7241,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-018",
+          "title": "Incorrect Assessment Weight Configuration",
+          "family": "grades_issue",
+          "score": 9.4615,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-021",
+          "title": "Invalid Sender Authentication DNS Records",
+          "family": "notification_failure",
+          "score": 7.0333,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-019",
+          "title": "Timezone Boundary Error in Submission Eligibility",
+          "family": "grades_issue",
+          "score": 0.6017,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-016",
+          "title": "Grade Import Consumer Schema Mismatch",
+          "family": "grades_issue",
+          "score": 0.5305,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-020",
+          "title": "Gradebook Cache Not Invalidated",
+          "family": "grades_issue",
+          "score": 0.5278,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": true
+    },
+    {
+      "query_id": "Q-12",
+      "expected_kb_id": "KB-022",
+      "expected_title": "SMTP Provider Throttling",
+      "family": "notification_failure",
+      "query_text": "Hey, notice how email alerts stopped going out to everyone? The outbound message queue is piling up with SMTP rejection notices and nothing is getting delivered.",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-022",
+          "title": "SMTP Provider Throttling",
+          "family": "notification_failure",
+          "score": 15.6636,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-014",
+          "title": "Slow DNS Resolution for Integration Host",
+          "family": "slow_or_timeout",
+          "score": 7.1106,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-007",
+          "title": "Expired Object Storage Credentials",
+          "family": "upload_failure",
+          "score": 6.9271,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-022",
+          "title": "SMTP Provider Throttling",
+          "family": "notification_failure",
+          "score": 0.5941,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-024",
+          "title": "Notification Preferences Changed During Migration",
+          "family": "notification_failure",
+          "score": 0.5151,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-023",
+          "title": "Disabled Email Event Subscription",
+          "family": "notification_failure",
+          "score": 0.456,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": true
+    },
+    {
+      "query_id": "Q-13",
+      "expected_kb_id": "KB-024",
+      "expected_title": "Notification Preferences Changed During Migration",
+      "family": "notification_failure",
+      "query_text": "[ALERT] Messaging logs indicate that dispatch routines are suppressing all course alerts due to failing preference validations across student profiles following the recent system migration.",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-024",
+          "title": "Notification Preferences Changed During Migration",
+          "family": "notification_failure",
+          "score": 10.252,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-002",
+          "title": "Authentication Token Rejected Due to Clock Drift",
+          "family": "login_failure",
+          "score": 6.0847,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-023",
+          "title": "Disabled Email Event Subscription",
+          "family": "notification_failure",
+          "score": 5.7662,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-024",
+          "title": "Notification Preferences Changed During Migration",
+          "family": "notification_failure",
+          "score": 0.642,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-023",
+          "title": "Disabled Email Event Subscription",
+          "family": "notification_failure",
+          "score": 0.4824,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-022",
+          "title": "SMTP Provider Throttling",
+          "family": "notification_failure",
+          "score": 0.4754,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": true
+    },
+    {
+      "query_id": "Q-14",
+      "expected_kb_id": "KB-027",
+      "expected_title": "Unsupported Transcoded Video Codec",
+      "family": "video_playback",
+      "query_text": "Hi IT helpdesk, I am trying to watch today's recorded lecture video for my computer science class, but the player keeps throwing a decoding error and refuses to play anything even though the page loads fine. Please help!",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-026",
+          "title": "Invalid Signed Video URL",
+          "family": "video_playback",
+          "score": 16.2292,
+          "is_expected": false
+        },
+        {
+          "rank": 2,
+          "id": "KB-027",
+          "title": "Unsupported Transcoded Video Codec",
+          "family": "video_playback",
+          "score": 14.8753,
+          "is_expected": true
+        },
+        {
+          "rank": 3,
+          "id": "KB-029",
+          "title": "Video Origin Read Permission Removed",
+          "family": "video_playback",
+          "score": 13.6038,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-027",
+          "title": "Unsupported Transcoded Video Codec",
+          "family": "video_playback",
+          "score": 0.7254,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-026",
+          "title": "Invalid Signed Video URL",
+          "family": "video_playback",
+          "score": 0.6093,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-029",
+          "title": "Video Origin Read Permission Removed",
+          "family": "video_playback",
+          "score": 0.5876,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": false,
+      "vector_correct_top1": true
+    },
+    {
+      "query_id": "Q-15",
+      "expected_kb_id": "KB-029",
+      "expected_title": "Video Origin Read Permission Removed",
+      "family": "video_playback",
+      "query_text": "Incident report: Edge delivery monitoring registers persistent origin fetch failures and storage permission denials when viewers attempt to load recorded lecture media through the CDN.",
+      "bm25_top3": [
+        {
+          "rank": 1,
+          "id": "KB-029",
+          "title": "Video Origin Read Permission Removed",
+          "family": "video_playback",
+          "score": 26.0749,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-011",
+          "title": "Missing Index on Course Enrollment Query",
+          "family": "slow_or_timeout",
+          "score": 7.2352,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-007",
+          "title": "Expired Object Storage Credentials",
+          "family": "upload_failure",
+          "score": 7.109,
+          "is_expected": false
+        }
+      ],
+      "vector_top3": [
+        {
+          "rank": 1,
+          "id": "KB-029",
+          "title": "Video Origin Read Permission Removed",
+          "family": "video_playback",
+          "score": 0.6168,
+          "is_expected": true
+        },
+        {
+          "rank": 2,
+          "id": "KB-030",
+          "title": "Digital Rights License Endpoint Unavailable",
+          "family": "video_playback",
+          "score": 0.5289,
+          "is_expected": false
+        },
+        {
+          "rank": 3,
+          "id": "KB-028",
+          "title": "HTTP Range Headers Stripped by Proxy",
+          "family": "video_playback",
+          "score": 0.5284,
+          "is_expected": false
+        }
+      ],
+      "bm25_correct_top1": true,
+      "vector_correct_top1": true
+    }
+  ]
+}
