@@ -1,0 +1,13 @@
+{
+  "best_model_name": "sentence_transformer_logreg",
+  "best_model_file": "sentence_transformer_logreg.joblib",
+  "validation_macro_f1": 0.5947,
+  "validation_accuracy": 0.575,
+  "embedding_provider": "sentence-transformers/all-MiniLM-L6-v2",
+  "classes": [
+    "P1",
+    "P2",
+    "P3",
+    "P4"
+  ]
+}
