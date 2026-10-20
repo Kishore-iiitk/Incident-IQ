@@ -1,0 +1,252 @@
+[
+  {
+    "spec_id": "SPEC-0051",
+    "title": "LMS dashboard requests failing for many users",
+    "description": "ALERT: lms-web dashboard and course-shell requests failing for many students and instructors. HTTP 502 responses increased to 37% at 14:22 UTC, affecting navigation across multiple courses. No alternate access route is available."
+  },
+  {
+    "spec_id": "SPEC-0052",
+    "title": "Bookstore inventory missing for my account",
+    "description": "Engineer ticket: campus-store-catalog returns an empty inventory list for one user on the textbook page; the public bookstore website still displays available titles."
+  },
+  {
+    "spec_id": "SPEC-0053",
+    "title": "Library reserve list not syncing for my account",
+    "description": "hey, library-catalog-sync isn't showing the journal reserves in my account. I can open the library website directly, but the integrated reserve list is still empty."
+  },
+  {
+    "spec_id": "SPEC-0054",
+    "title": "Textbook listing won't load",
+    "description": "Hello, the campus bookstore catalog shows a blank page for me when I open the required textbook list, but I can find the books by using the bookstore's main website."
+  },
+  {
+    "spec_id": "SPEC-0055",
+    "title": "Transcript PDF generation failing campus-wide",
+    "description": "ALERT: transcript-pdf-generator failed for all registrar requests; signed transcript jobs are returning HTTP 500. No transcript data loss detected, and users can request a manually prepared transcript through the registrar office."
+  },
+  {
+    "spec_id": "SPEC-0056",
+    "title": "Authorization checks failing across campus",
+    "description": "ALERT: rbac-policy-engine denies valid student, TA, and instructor requests across all accounts. HTTP 403 rate reached 100% at 10:46 UTC; direct links to some course resources remain accessible."
+  },
+  {
+    "spec_id": "SPEC-0057",
+    "title": "Quiz results seem incorrect",
+    "description": "Hello, several students have noticed that quiz scores don't look right, but we can't tell what is causing it. We haven't found another way to get the results checked."
+  },
+  {
+    "spec_id": "SPEC-0058",
+    "title": "Audit log export unavailable",
+    "description": "Hello, I can't download my audit-log export from the compliance dashboard. The page reports an export failure, although I can view the same log entries in the dashboard."
+  },
+  {
+    "spec_id": "SPEC-0059",
+    "title": "Role access appears inconsistent",
+    "description": "Engineer ticket: rbac-policy-engine is returning inconsistent authorization results for many users across student and instructor roles. Some requests appear to succeed after retrying, but the exact failure pattern is still unclear."
+  },
+  {
+    "spec_id": "SPEC-0060",
+    "title": "API gateway errors affecting many users",
+    "description": "hey, api-gateway is throwing errors for loads of people right now. Requests to course and account APIs are failing with 502s, and we can't get anything through consistently. No working alternate route has been identified."
+  },
+  {
+    "spec_id": "SPEC-0061",
+    "title": "LDAP lookup failures for several accounts",
+    "description": "Engineer ticket: user-directory LDAP searches return `LDAP error 81` for several faculty and student accounts; profile lookups and authentication-related directory queries are failing."
+  },
+  {
+    "spec_id": "SPEC-0062",
+    "title": "In-app feedback widget unavailable",
+    "description": "Hello support, the feedback widget is not opening for anyone in the campus application. We can still report bugs through the support website, but the in-app option does nothing when clicked. This started around 11:30 this morning."
+  },
+  {
+    "spec_id": "SPEC-0063",
+    "title": "Redis sessions dropping for a few users",
+    "description": "Engineer ticket: session-store intermittently evicts active Redis sessions for a small group of users; session lookups return nil, though some users can remain logged in by refreshing."
+  },
+  {
+    "spec_id": "SPEC-0064",
+    "title": "One participant cannot join live lecture",
+    "description": "Engineer ticket: live-classroom-stream fails WebRTC negotiation for one participant with `ICE connection failed` after 12 seconds. The rest of the class is connected, and the affected user can listen through the lecture's browser audio fallback."
+  },
+  {
+    "spec_id": "SPEC-0065",
+    "title": "Quiz scoring requests failing for all users",
+    "description": "ALERT: quiz-evaluator scoring endpoint returns HTTP 500 for all quiz submissions. Automated results are unavailable across courses, and no alternate scoring workflow is configured. Failure rate reached 100% at 09:18 UTC."
+  },
+  {
+    "spec_id": "SPEC-0066",
+    "title": "Helpdesk submissions failing intermittently",
+    "description": "hey, a few of us can't submit support tickets in the campus tracker. It sometimes works if we try again, and email is still available for sending the issue to IT. The ticket list itself loads fine."
+  },
+  {
+    "spec_id": "SPEC-0067",
+    "title": "Feedback widget not recording reports",
+    "description": "hey, the in-app feedback collector isn't working for anyone. Clicking submit doesn't seem to save anything, but we can still send feedback through the support site instead."
+  },
+  {
+    "spec_id": "SPEC-0068",
+    "title": "Registration record disappeared for one student",
+    "description": "Engineer ticket: enrollment-service lost one user's confirmed course registration entry after a waitlist update; the course is absent from the student's schedule, and no alternate registration path is available."
+  },
+  {
+    "spec_id": "SPEC-0069",
+    "title": "Search results incomplete for many users",
+    "description": "hey, search is missing results for lots of people looking up courses and library resources. The direct links still work for some pages, but forum posts and syllabi aren't showing up consistently."
+  },
+  {
+    "spec_id": "SPEC-0070",
+    "title": "Theme settings not applied consistently",
+    "description": "Engineer ticket: theme-service fails to apply dark mode and high-contrast settings for a few users after saving preferences. The API returns HTTP 200, but the page remains in its previous theme; browser-level contrast settings provide a temporary workaround."
+  },
+  {
+    "spec_id": "SPEC-0071",
+    "title": "Ticket submission failing for one user",
+    "description": "ALERT: helpdesk-ticketing submission endpoint rejected requests from one account at 15:06 UTC. Existing tickets remain visible, and the user can submit a new request through the support email channel."
+  },
+  {
+    "spec_id": "SPEC-0072",
+    "title": "Database replicas appear out of sync",
+    "description": "ALERT: db-replica-sync reports unexpected replication behavior across all read replicas. Some data appears delayed, though the exact lag and cause are not yet clear; directing reads to the primary may help."
+  },
+  {
+    "spec_id": "SPEC-0073",
+    "title": "Tuition payment records missing after checkout",
+    "description": "Hello, students are reporting that tuition checkout completed but the payment entries have disappeared from their bursar ledgers. This appears to affect everyone using the payment system, and we cannot find a working alternative checkout method. Please investigate the missing transaction records."
+  },
+  {
+    "spec_id": "SPEC-0074",
+    "title": "Parking permit record not appearing",
+    "description": "Engineer ticket: parking-pass-manager returns HTTP 404 for one user's existing parking decal registration; the permit does not appear in the account dashboard."
+  },
+  {
+    "spec_id": "SPEC-0075",
+    "title": "Calendar feed fails for one subscriber",
+    "description": "ALERT: event-calendar feed endpoint returning HTTP 500 for one subscriber since 08:52 UTC. Campus event entries are not loading, and no alternate calendar view is available for this account."
+  },
+  {
+    "spec_id": "SPEC-0076",
+    "title": "Course service unavailable for all users",
+    "description": "Engineer ticket: course-service returns `504 Gateway Timeout` on syllabus, module listing, lecture schedule, and roster endpoints for all users. Requests exceed the 30-second timeout threshold, and no alternate course interface is available."
+  },
+  {
+    "spec_id": "SPEC-0077",
+    "title": "SSO failing for a few accounts",
+    "description": "hey, auth-sso is rejecting a few people's logins after the identity provider redirect. We keep getting sent back to the sign-in page, and there doesn't seem to be another way in for those accounts."
+  },
+  {
+    "spec_id": "SPEC-0078",
+    "title": "My course roster page won't open",
+    "description": "Hello, I can't access the roster page for one of my courses, although the syllabus and lecture schedule seem fine. Opening the same course through the direct course link may work, but the roster tab keeps failing."
+  },
+  {
+    "spec_id": "SPEC-0079",
+    "title": "Unable to create ticket from my account",
+    "description": "Engineer ticket: helpdesk-ticketing returns HTTP 422 for one user's ticket submission with an invalid payload response. Existing tickets remain accessible, and the user can report the issue through the support email address."
+  },
+  {
+    "spec_id": "SPEC-0080",
+    "title": "Nightly email digests not generated",
+    "description": "ALERT: email-digest-worker failed scheduled runs for all users at 02:00 UTC. Unread notification summaries were not delivered, and no alternate digest delivery mechanism is configured; unread items remain available in the application."
+  },
+  {
+    "spec_id": "SPEC-0081",
+    "title": "Transcript PDF generation is failing",
+    "description": "hey, transcript-pdf-generator isn't producing official PDFs for anyone. We can still ask the registrar for a manually prepared copy, but the normal signed download isn't working and the requests keep failing."
+  },
+  {
+    "spec_id": "SPEC-0082",
+    "title": "Active sessions unavailable campus-wide",
+    "description": "ALERT: session-store Redis lookup failures affecting all authenticated users; active sessions cannot be retrieved and login sessions are failing."
+  },
+  {
+    "spec_id": "SPEC-0083",
+    "title": "Alumni directory not loading for my account",
+    "description": "hey, the alumni portal isn't showing the directory for me. I tried reloading and signing in again, but it still won't open, and I don't have another way to get to the directory."
+  },
+  {
+    "spec_id": "SPEC-0084",
+    "title": "Feedback reports failing to submit",
+    "description": "Hello, many of us can't submit bug reports through the in-app feedback widget. The form stays open without confirming submission, although we can send reports through the support website."
+  },
+  {
+    "spec_id": "SPEC-0085",
+    "title": "LMS dashboard unavailable for many students",
+    "description": "Hello support, many students and instructors are unable to open the LMS dashboard or navigate into their course pages. We receive a blank screen after signing in, and refreshing does not help. There is no alternative course interface available right now."
+  },
+  {
+    "spec_id": "SPEC-0086",
+    "title": "Dark mode preference not applying",
+    "description": "ALERT: theme-service failed to apply the saved dark mode setting for one account; toggling the browser's dark-mode extension works as a temporary workaround."
+  },
+  {
+    "spec_id": "SPEC-0087",
+    "title": "Course roster endpoint failing for a few users",
+    "description": "ALERT: course-service roster requests returning HTTP 403 for several accounts; opening the roster from the course overview works as a workaround."
+  },
+  {
+    "spec_id": "SPEC-0088",
+    "title": "Directory lookup behaving unexpectedly",
+    "description": "Engineer ticket: user-directory lookup for one account is not returning the expected profile information. Some directory requests appear to work, and using the staff directory page may provide the details needed while the issue is investigated."
+  },
+  {
+    "spec_id": "SPEC-0089",
+    "title": "Tuition payment entries missing",
+    "description": "hey, a few of us completed payments but the transactions disappeared from the bursar ledger. We can't find any alternate way to pay or confirm the missing entries."
+  },
+  {
+    "spec_id": "SPEC-0090",
+    "title": "Payment checkout fails on my account",
+    "description": "Hello, I cannot complete tuition payment through the campus checkout page, although other students seem able to pay. The processor returns a payment error after I submit my card details, but I can use the bursar's separate payment portal instead."
+  },
+  {
+    "spec_id": "SPEC-0091",
+    "title": "Redis cache behaving inconsistently",
+    "description": "Engineer ticket: redis-cache responses are inconsistent across the application, affecting course catalog and class metadata lookups. The cache appears to recover on some requests, and bypassing it may allow direct database reads while the underlying issue is checked."
+  },
+  {
+    "spec_id": "SPEC-0092",
+    "title": "Search missing course and library results",
+    "description": "hey, search is acting up for lots of us, but opening the course or library page directly still works."
+  },
+  {
+    "spec_id": "SPEC-0093",
+    "title": "Campus SSO login unavailable",
+    "description": "Hello support, nobody seems able to sign in through the campus SSO right now. The login flow is behaving strangely, and we can access a few applications through their direct sign-in pages, but most services remain inaccessible."
+  },
+  {
+    "spec_id": "SPEC-0094",
+    "title": "API gateway unavailable across services",
+    "description": "hey, api-gateway is failing for everyone and requests aren't reaching the backend services. We're seeing repeated connection errors, and nothing seems to get through at the moment. There isn't another route we can use."
+  },
+  {
+    "spec_id": "SPEC-0095",
+    "title": "Course syllabus unavailable for one user",
+    "description": "Engineer ticket: course-service returns HTTP 404 for one user's syllabus request, while module listings and roster data load normally."
+  },
+  {
+    "spec_id": "SPEC-0096",
+    "title": "Digest generation skipped for one user",
+    "description": "ALERT: email-digest-worker missed one user's scheduled digest; unread summaries remain accessible through the notification page."
+  },
+  {
+    "spec_id": "SPEC-0097",
+    "title": "Alumni portal page not loading",
+    "description": "Hello, I'm having trouble with my alumni portal account and can't get the page to behave normally. I can access some information another way, but I'm not sure what's causing the issue."
+  },
+  {
+    "spec_id": "SPEC-0098",
+    "title": "Campus calendar not loading",
+    "description": "hey, event-calendar isn't loading for anyone right now, but the university events page still shows the schedule."
+  },
+  {
+    "spec_id": "SPEC-0099",
+    "title": "Library catalog sync stopped for all users",
+    "description": "Engineer ticket: library-catalog-sync has stopped delivering catalog and electronic journal reserve updates to all users. Sync jobs return `ConnectionResetError` after 45 seconds, and the integrated library resource lists are unavailable."
+  },
+  {
+    "spec_id": "SPEC-0100",
+    "title": "Primary database records missing",
+    "description": "hey, db-primary has lost transaction records and writes are failing for everyone; nothing is working and there isn't an alternate system to use."
+  }
+]

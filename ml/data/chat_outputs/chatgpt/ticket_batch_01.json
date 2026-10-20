@@ -1,0 +1,252 @@
+[
+  {
+    "spec_id": "SPEC-0001",
+    "title": "SSO authentication failures across campus",
+    "description": "Engineer ticket: auth-sso SAML validation is failing for all users with HTTP 502 during identity provider handshakes; authentication is unavailable, and no alternative login path is configured."
+  },
+  {
+    "spec_id": "SPEC-0002",
+    "title": "Campus calendar feed unavailable",
+    "description": "ALERT: event-calendar endpoint returning 503 for all campus clients. Academic calendar, lecture series, and holiday feeds are unreachable. Last successful poll: 13:42 UTC; no alternate feed detected."
+  },
+  {
+    "spec_id": "SPEC-0003",
+    "title": "Catalog sync fails for one account",
+    "description": "library-catalog-sync returns HTTP 401 for a single user's electronic journal reserve lookup; the user can access the same material directly through the library website."
+  },
+  {
+    "spec_id": "SPEC-0004",
+    "title": "Alumni portal search fails for one user",
+    "description": "The alumni-portal directory search returns a blank results panel for one account, while other pages load normally. Browser logs show a 500 response from `/api/alumni/search` at 10:17, and clearing the session cache did not resolve the issue."
+  },
+  {
+    "spec_id": "SPEC-0005",
+    "title": "Some course pages will not load",
+    "description": "Hello, a few of us cannot open the course syllabus or module list, and we get an error whenever we try. Could someone please check this?"
+  },
+  {
+    "spec_id": "SPEC-0006",
+    "title": "Attendance check-in behaving unexpectedly",
+    "description": "attendance-tracker reports inconsistent check-in results across campus; the issue affects all classes, though some QR scans appear to register after retrying."
+  },
+  {
+    "spec_id": "SPEC-0007",
+    "title": "Profile photos not updating",
+    "description": "Hi support, a few students and I uploaded new profile photos, but our avatars still show the old pictures. Could you help us get them updated?"
+  },
+  {
+    "spec_id": "SPEC-0008",
+    "title": "Course registration entry disappeared",
+    "description": "Hello, my enrollment page no longer shows the course I registered for, and I think the entry has been lost. I can still try registering again, but I'm worried about ending up on the waitlist twice."
+  },
+  {
+    "spec_id": "SPEC-0009",
+    "title": "Alumni portal page issue detected",
+    "description": "ALERT: alumni-portal anomaly detected for one account. A partial workaround appears available; additional details are not yet available."
+  },
+  {
+    "spec_id": "SPEC-0010",
+    "title": "Gradebook result missing for one account",
+    "description": "ALERT: grade-service record loss detected for one student's posted assignment grade; recalculation is required, and the instructor can re-enter the score manually."
+  },
+  {
+    "spec_id": "SPEC-0011",
+    "title": "Forum replies fail to publish",
+    "description": "Engineer report: discussion-forum POST requests return HTTP 500 for several users when replying to course threads; existing messages remain intact, but new replies cannot be submitted."
+  },
+  {
+    "spec_id": "SPEC-0012",
+    "title": "Primary database writes failing",
+    "description": "hey, db-primary writes are timing out for everyone rn. Reads still work on the replica, but transactions aren't completing on the main database."
+  },
+  {
+    "spec_id": "SPEC-0013",
+    "title": "Cached JavaScript remains outdated",
+    "description": "Hello, the campus portal keeps loading an old JavaScript bundle on my laptop. A hard refresh fixes it temporarily, but the CDN seems to keep serving the stale file."
+  },
+  {
+    "spec_id": "SPEC-0014",
+    "title": "Assignment submissions missing after upload",
+    "description": "Hello support, several students submitted homework and received confirmation, but the submissions are now missing from the assignment page. We can still upload copies directly to the instructor's shared folder, but the official submission records appear to have been lost."
+  },
+  {
+    "spec_id": "SPEC-0015",
+    "title": "LMS dashboard unavailable campus-wide",
+    "description": "ALERT: lms-web returning HTTP 503 on dashboard and course-shell routes for all students and instructors. Navigation requests are failing across the application. Error rate reached 100% at 14:08 UTC; no working alternate interface detected."
+  },
+  {
+    "spec_id": "SPEC-0016",
+    "title": "Lost forum post for individual user",
+    "description": "Engineer ticket: discussion-forum post ID 84127 is missing after an edit operation for one user; the original content is no longer present in the thread, but a local draft can be reposted."
+  },
+  {
+    "spec_id": "SPEC-0017",
+    "title": "Journal reserve sync partially failing",
+    "description": "hey, library-catalog-sync isn't bringing all reserve links into my account. Direct catalog access still works, so I can open some resources manually, but the integrated list is incomplete."
+  },
+  {
+    "spec_id": "SPEC-0018",
+    "title": "My SSO login is looping",
+    "description": "SSO keeps sending my account back to the login page after the SAML redirect. I can get into one app using its direct login, but the other campus tools won't open."
+  },
+  {
+    "spec_id": "SPEC-0019",
+    "title": "Role permissions incorrect for multiple users",
+    "description": "Hello support, several teaching assistants and instructors are seeing incorrect access permissions in the campus system. The RBAC policy engine denies access to course tools they should be able to use, returning HTTP 403; switching to the direct course URL sometimes works."
+  },
+  {
+    "spec_id": "SPEC-0020",
+    "title": "Library links look out of sync",
+    "description": "hey, a bunch of us are seeing weird library catalog links today. Opening the library site directly works for now."
+  },
+  {
+    "spec_id": "SPEC-0021",
+    "title": "Calendar event edits not syncing",
+    "description": "Engineer ticket: event-calendar update requests for one user's lecture series are not reflected in the feed; PATCH calls return 409 Conflict after a recent edit. The user can update the event through the calendar web interface."
+  },
+  {
+    "spec_id": "SPEC-0022",
+    "title": "LMS is down for everyone",
+    "description": "hey, nobody can get into the LMS dashboard right now. Students and instructors both get stuck before reaching their courses, and refreshing doesn't help. We don't have another way to access the course pages at the moment."
+  },
+  {
+    "spec_id": "SPEC-0023",
+    "title": "Helpdesk ticket intake stopped",
+    "description": "hey, the helpdesk isn't accepting tickets from anyone right now. The tracker page loads, but submitting a request just spins; sending the issue to the support email works as a temporary workaround."
+  },
+  {
+    "spec_id": "SPEC-0024",
+    "title": "Nightly archive upload failed",
+    "description": "Hello, the db-backup-archiver report shows last night's snapshot was created but not uploaded to cold storage. The local backup is still available, so please check the archive transfer."
+  },
+  {
+    "spec_id": "SPEC-0025",
+    "title": "Quiz score looks wrong",
+    "description": "Hi, the quiz evaluator seems to have calculated my score incorrectly, but I'm not sure what happened. I can still review my answers and send the instructor a screenshot if that helps."
+  },
+  {
+    "spec_id": "SPEC-0026",
+    "title": "Search service unavailable across campus",
+    "description": "ALERT: search cluster health is red; all search requests are failing for course syllabi, library resources, and forum posts. Query latency exceeded 8 seconds before HTTP 503 responses began at 09:31 UTC. Users can navigate directly to known pages as a temporary alternative."
+  },
+  {
+    "spec_id": "SPEC-0027",
+    "title": "Notification dispatcher queue stalled",
+    "description": "Engineer ticket: notifications dispatcher queue depth exceeds 18,000 and delivery workers return timeout errors; push, SMS, and in-app banners are failing for all users."
+  },
+  {
+    "spec_id": "SPEC-0028",
+    "title": "Live classroom streams failing campus-wide",
+    "description": "ALERT: live-classroom-stream WebRTC connection success dropped to 2% for all participants. Screen sharing and lecture audio/video are unavailable in active sessions; joining by audio dial-in works for some classes."
+  },
+  {
+    "spec_id": "SPEC-0029",
+    "title": "Notification missing for one account",
+    "description": "ALERT: notifications delivery failed for one user token; retrying the push registration or checking the in-app notification center may restore access."
+  },
+  {
+    "spec_id": "SPEC-0030",
+    "title": "High-contrast theme fails to apply",
+    "description": "Engineer ticket: theme-service returns a 422 response when a few users enable high-contrast mode. The setting remains saved but the interface colors do not change; manually increasing browser contrast helps temporarily."
+  },
+  {
+    "spec_id": "SPEC-0031",
+    "title": "Calendar feed missing recent events",
+    "description": "Hello, my calendar feed has stopped showing some newly added campus events. The events are visible on the main calendar page, so I can check there for now, but my subscribed feed hasn't refreshed."
+  },
+  {
+    "spec_id": "SPEC-0032",
+    "title": "SSO handshake failing for several users",
+    "description": "ALERT: auth-sso SAML assertion validation errors affecting a small group of accounts; direct application login remains available for supported services."
+  },
+  {
+    "spec_id": "SPEC-0033",
+    "title": "Registration page stuck for many students",
+    "description": "hey, enrollment-service is hanging for lots of people trying to register for semester courses. The waitlist page won't load either, and we're all getting stuck before the prerequisite check finishes."
+  },
+  {
+    "spec_id": "SPEC-0034",
+    "title": "Single live classroom stream disconnecting",
+    "description": "ALERT: live-classroom-stream reports repeated WebRTC disconnects for one participant; ICE negotiation fails after 15 seconds. Other users appear connected, but this participant cannot rejoin the session."
+  },
+  {
+    "spec_id": "SPEC-0035",
+    "title": "API gateway returns intermittent errors",
+    "description": "ALERT: api-gateway 502 response rate reached 24% for a subset of clients at 11:26 UTC. TLS termination and upstream routing are affected; retrying requests succeeds for most callers."
+  },
+  {
+    "spec_id": "SPEC-0036",
+    "title": "Survey page not behaving normally",
+    "description": "Engineer ticket: one user's survey-service page isn't working as expected. The user can still access part of the survey, but the exact failure is unclear."
+  },
+  {
+    "spec_id": "SPEC-0037",
+    "title": "Session store errors affecting multiple users",
+    "description": "yo, session-store is dropping sessions for a bunch of people and they're getting logged out mid-use. Can't get a stable login right now."
+  },
+  {
+    "spec_id": "SPEC-0038",
+    "title": "Quiz scoring records missing",
+    "description": "Engineer ticket: quiz-evaluator has lost scoring records across all users; the grading job returns `KeyError: score_record` and no scores are available. There is no alternate scoring path configured."
+  },
+  {
+    "spec_id": "SPEC-0039",
+    "title": "Course service responding inconsistently",
+    "description": "ALERT: course-service responses are inconsistent for all users, affecting syllabus and roster views. Some requests appear to work after retrying, but the underlying cause and exact failure pattern remain unknown."
+  },
+  {
+    "spec_id": "SPEC-0040",
+    "title": "Unread digest not generated for one user",
+    "description": "ALERT: email-digest-worker skipped one user's nightly digest at 02:00 UTC. The unread notification list remains accessible in the application, and the digest can be triggered manually."
+  },
+  {
+    "spec_id": "SPEC-0041",
+    "title": "Course pages unavailable for everyone",
+    "description": "Hello support, none of us can open course syllabi or lecture schedules, and roster pages are failing too. Could you please check the course service? We don't have another way to access these pages."
+  },
+  {
+    "spec_id": "SPEC-0042",
+    "title": "Survey submissions intermittently failing",
+    "description": "ALERT: survey-service showing intermittent issues for a few respondents. Some submissions appear to go through after retrying, but the exact failure and affected forms remain unclear."
+  },
+  {
+    "spec_id": "SPEC-0043",
+    "title": "Replica sync lag increasing",
+    "description": "hey, db-replica-sync is lagging for a few read replicas; WAL replay is behind and the dashboards are showing stale data. Nothing is catching up yet."
+  },
+  {
+    "spec_id": "SPEC-0044",
+    "title": "Helpdesk ticket updates delayed",
+    "description": "hey, a few of us can't see new helpdesk ticket updates in the tracker. Refreshing sometimes shows the latest status, but comments are still missing for some tickets. Can someone check the sync?"
+  },
+  {
+    "spec_id": "SPEC-0045",
+    "title": "Grade records missing across gradebook",
+    "description": "ALERT: grade-service has lost posted assignment results for all users; grade retrieval returns HTTP 404 for previously available entries. No alternate gradebook is available."
+  },
+  {
+    "spec_id": "SPEC-0046",
+    "title": "Tuition checkout failing for many students",
+    "description": "ALERT: payments checkout is failing for many users, with transactions not completing. Processor responses are inconsistent and the current failure details are unclear; no alternate payment route is available."
+  },
+  {
+    "spec_id": "SPEC-0047",
+    "title": "Library catalog integration unavailable",
+    "description": "Hello, the library catalog integration isn't loading for my account, and the electronic journal reserve list is blank. I tried again later but it still won't open."
+  },
+  {
+    "spec_id": "SPEC-0048",
+    "title": "Helpdesk comments not syncing",
+    "description": "hey, some of us can't see new comments on support tickets. The main tracker still opens, but updates are patchy."
+  },
+  {
+    "spec_id": "SPEC-0049",
+    "title": "PDF and CSV exports failing",
+    "description": "Engineer ticket: report-export jobs fail for several administrative users with `ExportWorkerTimeout` after 60 seconds. No files are generated, and the report interface offers no alternate export method."
+  },
+  {
+    "spec_id": "SPEC-0050",
+    "title": "Course registration requests rejected",
+    "description": "Engineer ticket: enrollment-service rejects requests from many students with HTTP 409 during prerequisite validation; retrying does not resolve the registration failure."
+  }
+]
