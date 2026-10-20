@@ -25,6 +25,7 @@ const incidentSchema = new Schema({
   affected_users: { type: Schema.Types.Mixed, default: null },
   needs_review: { type: Boolean, default: true },
   error_message: { type: String, default: null },
+  retrieval_status: { type: String, default: null },
   created_at: { type: Date, default: Date.now, index: true },
   resolved_at: { type: Date, default: null }
 });
