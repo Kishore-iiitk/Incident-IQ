@@ -1,0 +1,252 @@
+[
+    {
+        "spec_id": "SPEC-0151",
+        "title": "Parking decal form issues",
+        "description": "Hey, a bunch of people trying to update their parking passes on parking-pass-manager are getting stuck on the checkout screen. Clearing browser cookies is an easy workaround for now, but we should look into the frontend script."
+    },
+    {
+        "spec_id": "SPEC-0152",
+        "title": "Course eval form errors",
+        "description": "Hey team, many students submitting feedback forms on survey-service are getting errors, though saving drafts locally helps a bit."
+    },
+    {
+        "spec_id": "SPEC-0153",
+        "title": "S3 media storage permission error across bucket",
+        "description": "Encountered HTTP 403 Forbidden on s3-media-storage affecting all media retrieval requests across the main lecture bucket. Rerouting requests via the secondary CDN endpoint provides an easy workaround. Metric error code: AccessDenied_BucketPolicy."
+    },
+    {
+        "spec_id": "SPEC-0154",
+        "title": "ALERT: Attendance check-in failure",
+        "description": "[ALERT] attendance-tracker check-in failed for user ID 7719 due to websocket timeout. Partial recovery achieved by manual QR code resubmission. Incident timestamp: 14:22 UTC."
+    },
+    {
+        "spec_id": "SPEC-0155",
+        "title": "Exam portal database lock for small group",
+        "description": "Database row lock contention in exam-portal blocking quiz submissions for a small group of students with no workaround available."
+    },
+    {
+        "spec_id": "SPEC-0156",
+        "title": "Bookstore textbook list not loading",
+        "description": "Hey, a few students in the dorm can't see their textbook listings on campus-store-catalog. Switching to the mobile web view is an easy workaround to bypass the blank page. Let's fix this minor bug later."
+    },
+    {
+        "spec_id": "SPEC-0157",
+        "title": "Database replica synchronization stopped",
+        "description": "Hello IT team, all read replicas have stopped updating from the main database, and there is no temporary workaround available."
+    },
+    {
+        "spec_id": "SPEC-0158",
+        "title": "API gateway route failure",
+        "description": "Hey everyone, api-gateway is throwing connection errors for all users, but switching to the fallback proxy endpoint is an easy fix."
+    },
+    {
+        "spec_id": "SPEC-0159",
+        "title": "Assignment submissions failing",
+        "description": "Hey, nobody can turn in homework on assignment-service right now and there's no workaround."
+    },
+    {
+        "spec_id": "SPEC-0160",
+        "title": "Cannot access learning management system",
+        "description": "Dear support, the entire lms-web portal is down for everyone on campus and we have no alternative way to view our courses."
+    },
+    {
+        "spec_id": "SPEC-0161",
+        "title": "ALERT: Audit log exporter job failure",
+        "description": "[ALERT] audit-log-exporter job failure detected for a few compliance buckets with simple manual restart workaround."
+    },
+    {
+        "spec_id": "SPEC-0162",
+        "title": "ALERT: Course service metadata timeout",
+        "description": "[ALERT] course-service timeout hitting syllabus endpoints for all users campus-wide. Cached JSON static files successfully served as an easy workaround. System recovery initiated."
+    },
+    {
+        "spec_id": "SPEC-0163",
+        "title": "Campus store inventory database deadlock",
+        "description": "Encountered deadlocks in campus-store-catalog halting online merchandise purchases for all students. No fallback workaround exists for the inventory check. Error code: PG_ERR_DEADLOCK_40P01."
+    },
+    {
+        "spec_id": "SPEC-0164",
+        "title": "Registration records lost",
+        "description": "Hello, many students trying to register for classes just found that their enrollment history and waitlist data were completely wiped out. There is no workaround or backup link available for us to recover it ourselves. Please look into this right away."
+    },
+    {
+        "spec_id": "SPEC-0165",
+        "title": "Lost discussion posts in department board",
+        "description": "Dear support team, a few users in our department lost several discussion-forum posts during the database glitch earlier. We managed to recover some text from browser caches, but the full history is missing. Can you restore our specific threads?"
+    },
+    {
+        "spec_id": "SPEC-0166",
+        "title": "PDF upload service errors",
+        "description": "Hey, many students are failing to upload PDFs to file-upload, but compressing the files first works as a partial workaround."
+    },
+    {
+        "spec_id": "SPEC-0167",
+        "title": "Decal application freezing",
+        "description": "Hello, my parking pass application freezes on the payment step, though clearing session cookies offers a partial workaround."
+    },
+    {
+        "spec_id": "SPEC-0168",
+        "title": "SAML assertion failure across authentication cluster",
+        "description": "Auth-sso token signing validation failed for all incoming identity provider handshakes. Fallback internal tokens provide a partial workaround while the certificate is renewed. Error code: SAML_ERR_CERT_EXPIRED."
+    },
+    {
+        "spec_id": "SPEC-0169",
+        "title": "Transcript PDF formatting bug",
+        "description": "Hey, a student's official transcript generation failed in transcript-pdf-generator. Re-running the render script with smaller font settings is an easy workaround. Let's make sure the layout doesn't break again."
+    },
+    {
+        "spec_id": "SPEC-0170",
+        "title": "Backup archiver issue",
+        "description": "Hello team, the backup system seems to be having trouble with several archives today. We can easily trigger them manually via the command line as a workaround, but wanted to report it. Thanks for taking a look."
+    },
+    {
+        "spec_id": "SPEC-0171",
+        "title": "Bookstore catalog search timeouts",
+        "description": "Campus-store-catalog search queries timing out for many users due to unindexed textbook queries. Enabling local client-side search filtering provides a partial workaround. Metric: 504 Gateway Timeout on /catalog/search."
+    },
+    {
+        "spec_id": "SPEC-0172",
+        "title": "Theme service styling failure",
+        "description": "Theme-service experiencing widespread rendering failures across all user interfaces. No workaround is available for the broken CSS injection. Investigating root cause."
+    },
+    {
+        "spec_id": "SPEC-0173",
+        "title": "Profile pictures deleted",
+        "description": "Hi team, all student profile photos were lost from student-profile-avatar, though uploading a new thumbnail provides a partial workaround."
+    },
+    {
+        "spec_id": "SPEC-0174",
+        "title": "RBAC permission lookup error for account",
+        "description": "Rbac-policy-engine threw an exception evaluating access rules for user ID 4410. Forcing a cache flush provides an easy workaround. Error: RoleNotFoundException in policy evaluation."
+    },
+    {
+        "spec_id": "SPEC-0175",
+        "title": "Exam portal question load issue",
+        "description": "Hello, a small group of students in our afternoon test session couldn't load their assessment questions on exam-portal. Refreshing the browser tab served as an easy workaround to get them back on track. Please check the session logs."
+    },
+    {
+        "spec_id": "SPEC-0176",
+        "title": "Redis cache memory error",
+        "description": "Redis-cache node OOM failure affecting a single connection with no workaround."
+    },
+    {
+        "spec_id": "SPEC-0177",
+        "title": "Digest worker missed a user",
+        "description": "Hey, email-digest-worker skipped the notification summary for one student account last night. Running the cron script manually for that user ID is an easy workaround. Let's check the log."
+    },
+    {
+        "spec_id": "SPEC-0178",
+        "title": "Push alerts not sending",
+        "description": "Hey everyone, notifications service stopped pushing alerts to all users campus-wide. Switching to the email broadcast tool is an easy workaround. Let's fix the socket connection soon."
+    },
+    {
+        "spec_id": "SPEC-0179",
+        "title": "Banner announcements rendering failure",
+        "description": "Banner-announcements failed to inject maintenance notices for many user sessions. A static CSS override provides a partial workaround while the script loader is debugged. Error code: ERR_BANNER_SCRIPT_TIMEOUT."
+    },
+    {
+        "spec_id": "SPEC-0180",
+        "title": "ALERT: Audit log exporter batch failure",
+        "description": "[ALERT] audit-log-exporter batch export timed out for many security compliance streams. Re-executing the background job via CLI provides an easy workaround. Timestamp: 16:45 UTC."
+    },
+    {
+        "spec_id": "SPEC-0181",
+        "title": "Digest emails failed for many users",
+        "description": "Hey, email-digest-worker failed to send out nightly summaries to a large group of users and there is no workaround right now. We'll need to check the worker queues."
+    },
+    {
+        "spec_id": "SPEC-0182",
+        "title": "Campus catalog cache down",
+        "description": "Hello support team, the redis-cache cluster is completely down for everyone, causing massive slowdowns across all course pages. There is no workaround available on our end. Please restore cache services immediately."
+    },
+    {
+        "spec_id": "SPEC-0183",
+        "title": "ALERT: Transcript generator error",
+        "description": "[ALERT] transcript-pdf-generator encountering rendering exceptions for a few student requests. Partial mitigation via fallback printer queue."
+    },
+    {
+        "spec_id": "SPEC-0184",
+        "title": "ALERT: Database backup archive partial failure",
+        "description": "[ALERT] db-backup-archiver failed to upload cold storage snapshots for many database partitions. Partial recovery achieved using secondary storage nodes. Metric: S3_UPLOAD_PARTIAL_FAIL."
+    },
+    {
+        "spec_id": "SPEC-0185",
+        "title": "Audit log exporter sync issues",
+        "description": "Hey, audit-log-exporter isn't syncing compliance logs for anyone across the system. Exporting raw database dumps manually serves as a partial workaround for now. Let's get this resolved."
+    },
+    {
+        "spec_id": "SPEC-0186",
+        "title": "API gateway completely offline",
+        "description": "Hey, api-gateway is down for everyone and there is no workaround available."
+    },
+    {
+        "spec_id": "SPEC-0187",
+        "title": "Logged out unexpectedly",
+        "description": "Hello, my authenticated session dropped on session-store and I had to log back in. Clearing browser cookies and re-authenticating provided an easy workaround. Just letting support know."
+    },
+    {
+        "spec_id": "SPEC-0188",
+        "title": "Calendar feed sync error",
+        "description": "Event-calendar sync failure for a single user with easy manual feed re-import workaround."
+    },
+    {
+        "spec_id": "SPEC-0189",
+        "title": "ALERT: Report export timeout",
+        "description": "[ALERT] report-export job timed out for one administrative user, with partial recovery via CSV download fallback."
+    },
+    {
+        "spec_id": "SPEC-0190",
+        "title": "Alumni portal inaccessible",
+        "description": "Hello, the alumni site is completely down for everyone with no workaround."
+    },
+    {
+        "spec_id": "SPEC-0191",
+        "title": "Cannot add course to schedule",
+        "description": "Hi, I can't register for my elective class on enrollment-service, though advising staff can apply an override as a partial workaround."
+    },
+    {
+        "spec_id": "SPEC-0192",
+        "title": "ALERT: Backup archiver failure",
+        "description": "[ALERT] db-backup-archiver failed to archive snapshots for many database clusters with zero workarounds available."
+    },
+    {
+        "spec_id": "SPEC-0193",
+        "title": "Homework submissions lost",
+        "description": "Hey guys, assignment-service just crashed and all submitted homework files were lost campus-wide! Restoring from the 12-hour snapshot provides a partial workaround, but recent uploads are missing. We need assistance."
+    },
+    {
+        "spec_id": "SPEC-0194",
+        "title": "Dark mode bug for a few users",
+        "description": "Hey, theme-service is acting up for a few users, but toggling the browser theme setting is an easy fix."
+    },
+    {
+        "spec_id": "SPEC-0195",
+        "title": "Discussion boards wiped out",
+        "description": "Hello, all discussion-forum posts across every course were lost today, though partial recovery is possible via daily database archives."
+    },
+    {
+        "spec_id": "SPEC-0196",
+        "title": "Announcement banner stuck on screen",
+        "description": "Hello tech support, a maintenance notice banner in banner-announcements won't close on my profile page. Running a quick browser console script to hide the element provides an easy workaround. Thank you for looking into it."
+    },
+    {
+        "spec_id": "SPEC-0197",
+        "title": "Cache lag affecting lookups",
+        "description": "Hey team, redis-cache is lagging and causing slow metadata lookups for many students. Flushing the expired keys cache is an easy workaround to speed things back up. Let's monitor it."
+    },
+    {
+        "spec_id": "SPEC-0198",
+        "title": "Gateway timeouts on course portal",
+        "description": "Dear IT support team, many students in our department are encountering connection timeouts when accessing the main portal through the api-gateway. Refreshing the browser page a few times serves as an easy workaround. Could someone investigate this routing issue?"
+    },
+    {
+        "spec_id": "SPEC-0199",
+        "title": "Alumni portal directory error for account",
+        "description": "Alumni-portal profile search threw an unhandled exception for user ID 9102. Using direct URL links provides a partial workaround for accessing directory pages. Error: NullReferenceException in alumni search module."
+    },
+    {
+        "spec_id": "SPEC-0200",
+        "title": "ALERT: Transcript generator offline",
+        "description": "[ALERT] transcript-pdf-generator service failure halting all registrar transcript exports with no workaround available."
+    }
+]
