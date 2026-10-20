@@ -1,0 +1,282 @@
+[
+  {
+    "name": "auth-sso",
+    "tier": 1,
+    "category": "Auth",
+    "owning_team": "Auth",
+    "holds_user_data": false
+  },
+  {
+    "name": "lms-web",
+    "tier": 1,
+    "category": "Frontend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "exam-portal",
+    "tier": 1,
+    "category": "Backend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "course-service",
+    "tier": 1,
+    "category": "Backend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "payments",
+    "tier": 1,
+    "category": "Backend",
+    "owning_team": "Backend",
+    "holds_user_data": true
+  },
+  {
+    "name": "db-primary",
+    "tier": 1,
+    "category": "Database",
+    "owning_team": "Database",
+    "holds_user_data": true
+  },
+  {
+    "name": "session-store",
+    "tier": 1,
+    "category": "Auth",
+    "owning_team": "Auth",
+    "holds_user_data": false
+  },
+  {
+    "name": "api-gateway",
+    "tier": 1,
+    "category": "Network",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "user-directory",
+    "tier": 1,
+    "category": "Auth",
+    "owning_team": "Auth",
+    "holds_user_data": false
+  },
+  {
+    "name": "db-replica-sync",
+    "tier": 1,
+    "category": "Database",
+    "owning_team": "Database",
+    "holds_user_data": false
+  },
+  {
+    "name": "grade-service",
+    "tier": 2,
+    "category": "Backend",
+    "owning_team": "Backend",
+    "holds_user_data": true
+  },
+  {
+    "name": "file-upload",
+    "tier": 2,
+    "category": "Backend",
+    "owning_team": "File Service",
+    "holds_user_data": true
+  },
+  {
+    "name": "assignment-service",
+    "tier": 2,
+    "category": "Backend",
+    "owning_team": "Backend",
+    "holds_user_data": true
+  },
+  {
+    "name": "notifications",
+    "tier": 2,
+    "category": "Infrastructure",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "search",
+    "tier": 2,
+    "category": "Backend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "enrollment-service",
+    "tier": 2,
+    "category": "Backend",
+    "owning_team": "Backend",
+    "holds_user_data": true
+  },
+  {
+    "name": "s3-media-storage",
+    "tier": 2,
+    "category": "Infrastructure",
+    "owning_team": "File Service",
+    "holds_user_data": true
+  },
+  {
+    "name": "discussion-forum",
+    "tier": 2,
+    "category": "Frontend",
+    "owning_team": "Backend",
+    "holds_user_data": true
+  },
+  {
+    "name": "redis-cache",
+    "tier": 2,
+    "category": "Database",
+    "owning_team": "Database",
+    "holds_user_data": false
+  },
+  {
+    "name": "quiz-evaluator",
+    "tier": 2,
+    "category": "Backend",
+    "owning_team": "Backend",
+    "holds_user_data": true
+  },
+  {
+    "name": "attendance-tracker",
+    "tier": 2,
+    "category": "Backend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "cdn-edge",
+    "tier": 2,
+    "category": "Network",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "live-classroom-stream",
+    "tier": 2,
+    "category": "Network",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "rbac-policy-engine",
+    "tier": 2,
+    "category": "Auth",
+    "owning_team": "Auth",
+    "holds_user_data": false
+  },
+  {
+    "name": "report-export",
+    "tier": 3,
+    "category": "Backend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "theme-service",
+    "tier": 3,
+    "category": "Frontend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "alumni-portal",
+    "tier": 3,
+    "category": "Frontend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "campus-store-catalog",
+    "tier": 3,
+    "category": "Frontend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "survey-service",
+    "tier": 3,
+    "category": "Support",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "audit-log-exporter",
+    "tier": 3,
+    "category": "Infrastructure",
+    "owning_team": "Database",
+    "holds_user_data": false
+  },
+  {
+    "name": "student-profile-avatar",
+    "tier": 3,
+    "category": "Frontend",
+    "owning_team": "File Service",
+    "holds_user_data": true
+  },
+  {
+    "name": "banner-announcements",
+    "tier": 3,
+    "category": "Frontend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "transcript-pdf-generator",
+    "tier": 3,
+    "category": "Backend",
+    "owning_team": "File Service",
+    "holds_user_data": false
+  },
+  {
+    "name": "helpdesk-ticketing",
+    "tier": 3,
+    "category": "Support",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "library-catalog-sync",
+    "tier": 3,
+    "category": "Backend",
+    "owning_team": "Database",
+    "holds_user_data": false
+  },
+  {
+    "name": "parking-pass-manager",
+    "tier": 3,
+    "category": "Support",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "event-calendar",
+    "tier": 3,
+    "category": "Frontend",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "feedback-collector",
+    "tier": 3,
+    "category": "Support",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  },
+  {
+    "name": "db-backup-archiver",
+    "tier": 3,
+    "category": "Database",
+    "owning_team": "Database",
+    "holds_user_data": false
+  },
+  {
+    "name": "email-digest-worker",
+    "tier": 3,
+    "category": "Infrastructure",
+    "owning_team": "Backend",
+    "holds_user_data": false
+  }
+]
