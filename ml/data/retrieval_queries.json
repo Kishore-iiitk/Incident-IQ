@@ -1,0 +1,77 @@
+[
+    {
+        "query_id": "Q-01",
+        "expected_kb_id": "KB-001",
+        "query": "[ALERT] Authentication monitoring reports a sharp spike in SAML assertion validation failures accompanied by a massive drop in successful logins, as users attempting to access their dashboard are redirected to the sign-in page."
+    },
+    {
+        "query_id": "Q-02",
+        "expected_kb_id": "KB-003",
+        "query": "Subject: Can't stay logged in. Every time I put in my password and get past the main sign-in step, the page just loops right back to the login screen before I can even see my classes!"
+    },
+    {
+        "query_id": "Q-03",
+        "expected_kb_id": "KB-005",
+        "query": "Ticket: Following the latest software push, telemetry graphs show an unexpected spike in credential check errors blocking valid users, while rates for nonexistent usernames show no unusual movement."
+    },
+    {
+        "query_id": "Q-04",
+        "expected_kb_id": "KB-006",
+        "query": "Hey team, whenever anyone tries turning in their coursework on the assignment submission page, the browser throws an HTTP 413 error and the document never shows up."
+    },
+    {
+        "query_id": "Q-05",
+        "expected_kb_id": "KB-008",
+        "query": "[ALERT] Node-level storage telemetry indicates filesystem capacity exhaustion across worker instances handling attachments, generating recurring temporary file creation errors during student uploads."
+    },
+    {
+        "query_id": "Q-06",
+        "expected_kb_id": "KB-010",
+        "query": "Hello support team, I've been trying for the last half hour to upload my project file, but every single attempt results in an error message and the document never attaches. Can someone please look into this?"
+    },
+    {
+        "query_id": "Q-07",
+        "expected_kb_id": "KB-011",
+        "query": "Issue report: Database performance dashboards display a sharp increase in request latency and prolonged query execution times specifically when fetching course enrollment data for student dashboards."
+    },
+    {
+        "query_id": "Q-08",
+        "expected_kb_id": "KB-013",
+        "query": "Is anyone else noticing that course and timetable views are crawling right now, and the database metrics are showing a massive spike in SQL queries alongside a dead cache hit rate?"
+    },
+    {
+        "query_id": "Q-09",
+        "expected_kb_id": "KB-015",
+        "query": "[ALERT] Performance telemetry flags excessive response times on the main student dashboard caused by protracted waiting periods for external calendar API calls."
+    },
+    {
+        "query_id": "Q-10",
+        "expected_kb_id": "KB-017",
+        "query": "Dear instructor, my professor posted the grades for our quiz yesterday, but when I open the gradebook view in the portal, none of the new scores show up for me. Could my account be out of sync?"
+    },
+    {
+        "query_id": "Q-11",
+        "expected_kb_id": "KB-019",
+        "query": "Defect ticket: Work uploaded close to the cutoff time is getting excluded from evaluation batches due to incorrect offset comparisons, leaving student records absent from the gradebook."
+    },
+    {
+        "query_id": "Q-12",
+        "expected_kb_id": "KB-022",
+        "query": "Hey, notice how email alerts stopped going out to everyone? The outbound message queue is piling up with SMTP rejection notices and nothing is getting delivered."
+    },
+    {
+        "query_id": "Q-13",
+        "expected_kb_id": "KB-024",
+        "query": "[ALERT] Messaging logs indicate that dispatch routines are suppressing all course alerts due to failing preference validations across student profiles following the recent system migration."
+    },
+    {
+        "query_id": "Q-14",
+        "expected_kb_id": "KB-027",
+        "query": "Hi IT helpdesk, I am trying to watch today's recorded lecture video for my computer science class, but the player keeps throwing a decoding error and refuses to play anything even though the page loads fine. Please help!"
+    },
+    {
+        "query_id": "Q-15",
+        "expected_kb_id": "KB-029",
+        "query": "Incident report: Edge delivery monitoring registers persistent origin fetch failures and storage permission denials when viewers attempt to load recorded lecture media through the CDN."
+    }
+]
