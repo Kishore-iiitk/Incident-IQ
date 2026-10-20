@@ -1,0 +1,11 @@
+{
+  "source": "reporter",
+  "service": "demo-lms",
+  "endpoint": "/upload",
+  "status": 500,
+  "message": "UploadServiceFailure: Failed to allocate attachment buffer on storage worker",
+  "stack": "Error: UploadServiceFailure: Failed to allocate attachment buffer on storage worker\n    at file:///C:/Users/kisho/Desktop/Incident-IQ/demo-lms/app.js:314:15\n    at Layer.handleRequest (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\router\\lib\\route.js:157:13)\n    at Route.dispatch (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\router\\lib\\route.js:117:3)\n    at handle (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\router\\index.js:435:11)\n    at Layer.handleRequest (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\router\\lib\\layer.js:152:17)\n    at C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\router\\index.js:295:15\n    at processParams (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\router\\index.js:582:12)\n    at next (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\router\\index.js:291:5)\n    at file:///C:/Users/kisho/Desktop/Incident-IQ/demo-lms/app.js:54:5",
+  "user_role": "student",
+  "user_id": "student_01",
+  "timestamp": "2026-10-20T19:52:03.665Z"
+}

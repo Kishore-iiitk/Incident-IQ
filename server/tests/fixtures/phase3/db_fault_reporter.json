@@ -1,0 +1,11 @@
+{
+  "source": "reporter",
+  "service": "demo-lms",
+  "endpoint": "/courses",
+  "status": 500,
+  "message": "Client must be connected before running operations",
+  "stack": "MongoNotConnectedError: Client must be connected before running operations\n    at autoConnect (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\mongodb\\lib\\operations\\execute_operation.js:105:19)\n    at executeOperation (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\mongodb\\lib\\operations\\execute_operation.js:46:40)\n    at FindCursor._initialize (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\mongodb\\lib\\cursor\\find_cursor.js:62:73)\n    at FindCursor.cursorInit (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:619:38)\n    at FindCursor.fetchBatch (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:653:24)\n    at FindCursor.next (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:325:28)\n    at [Symbol.asyncIterator] (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:253:45)\n    at AsyncGenerator.next (<anonymous>)\n    at FindCursor.toArray (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:405:26)\n    at model.Query._find (C:\\Users\\kisho\\Desktop\\Incident-IQ\\node_modules\\mongoose\\lib\\query.js:2491:27)",
+  "user_role": "student",
+  "user_id": "student_01",
+  "timestamp": "2026-10-20T19:52:03.512Z"
+}

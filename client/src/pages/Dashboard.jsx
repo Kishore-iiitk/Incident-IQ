@@ -3,7 +3,58 @@ import { ShieldAlert, AlertTriangle, CheckCircle2, Clock, Users, RefreshCw, Plus
 import SeverityBadge from '../components/SeverityBadge.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 
-export default function Dashboard({ onSelectIncident, onNewIncident }) {
+const renderSourceBadge = (source) => {
+  switch (source) {
+    case 'reporter':
+      return (
+        <span
+          key="reporter"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/80 shadow-sm"
+          title="Detected by Express Error Reporter middleware"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          Reporter
+        </span>
+      );
+    case 'poller':
+      return (
+        <span
+          key="poller"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-amber-950/80 text-amber-400 border border-amber-800/80 shadow-sm"
+          title="Detected by Health Poller probe"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          Poller
+        </span>
+      );
+    case 'log_watcher':
+      return (
+        <span
+          key="log_watcher"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-purple-950/80 text-purple-400 border border-purple-800/80 shadow-sm"
+          title="Detected by Log Watcher stream tailer"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+          Log Watcher
+        </span>
+      );
+    case 'user':
+    case 'user_submission':
+    default:
+      return (
+        <span
+          key="user"
+          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-sky-950/80 text-sky-400 border border-sky-800/80 shadow-sm"
+          title="User report"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+          User
+        </span>
+      );
+  }
+};
+
+export default function Dashboard({ onSelectIncident, onNewIncident, socket }) {
   const [incidents, setIncidents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,6 +78,50 @@ export default function Dashboard({ onSelectIncident, onNewIncident }) {
   useEffect(() => {
     fetchIncidents();
   }, []);
+
+  // Live Socket.IO synchronization for real-time incident updates without refresh
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleCreated = (newInc) => {
+      setIncidents((prev) => {
+        if (prev.some((i) => i._id === newInc._id)) return prev;
+        return [newInc, ...prev];
+      });
+    };
+
+    const handleUpdated = (updatedInc) => {
+      setIncidents((prev) =>
+        prev.map((i) => (i._id === updatedInc._id ? { ...i, ...updatedInc } : i))
+      );
+    };
+
+    const handlePipelineCompleted = (payload) => {
+      setIncidents((prev) =>
+        prev.map((i) => {
+          if (i._id === payload.incidentId) {
+            return {
+              ...i,
+              status: payload.status || 'review',
+              severity: payload.severity || i.severity,
+              assigned_team: payload.assigned_team || i.assigned_team
+            };
+          }
+          return i;
+        })
+      );
+    };
+
+    socket.on('incident:created', handleCreated);
+    socket.on('incident:updated', handleUpdated);
+    socket.on('pipeline:completed', handlePipelineCompleted);
+
+    return () => {
+      socket.off('incident:created', handleCreated);
+      socket.off('incident:updated', handleUpdated);
+      socket.off('pipeline:completed', handlePipelineCompleted);
+    };
+  }, [socket]);
 
   // Filtered list
   const filtered = incidents.filter((inc) => {
@@ -182,6 +277,33 @@ export default function Dashboard({ onSelectIncident, onNewIncident }) {
                 <div className="flex flex-wrap items-center gap-2">
                   <SeverityBadge severity={inc.severity} />
                   <StatusBadge status={inc.status} />
+
+                  {/* Auto-detected vs User-submitted flag */}
+                  {inc.sources && inc.sources.some(s => ['reporter', 'poller', 'log_watcher'].includes(s)) ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wide bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                      ⚡ AUTO-DETECTED
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold tracking-wide bg-slate-800/80 text-slate-400 border border-slate-700">
+                      USER REPORT
+                    </span>
+                  )}
+
+                  {/* Source Badges */}
+                  {inc.sources && inc.sources.length > 0 && (
+                    <div className="flex items-center gap-1">
+                      {Array.from(new Set(inc.sources)).map(renderSourceBadge)}
+                    </div>
+                  )}
+
+                  {/* Affected Users Count */}
+                  {inc.affected_users !== null && inc.affected_users !== undefined && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono bg-cyan-950/60 text-cyan-300 border border-cyan-800/60" title="Impacted Users">
+                      <Users className="w-3 h-3 text-cyan-400" />
+                      <span>{inc.affected_users} affected</span>
+                    </span>
+                  )}
+
                   {inc.assigned_team && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">
                       <Users className="w-3 h-3 text-indigo-400" />

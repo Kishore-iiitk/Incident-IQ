@@ -11,7 +11,7 @@ export function setSocketIO(io) {
   ioInstance = io;
 }
 
-function emitEvent(eventName, payload) {
+export function emitEvent(eventName, payload) {
   if (ioInstance) {
     ioInstance.emit(eventName, payload);
   }

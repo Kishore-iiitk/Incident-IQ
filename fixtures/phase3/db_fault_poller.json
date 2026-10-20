@@ -1,0 +1,9 @@
+{
+  "source": "poller",
+  "service": "demo-lms",
+  "endpoint": "/courses",
+  "status": 500,
+  "latency_ms": 18,
+  "message": "Health probe failed with HTTP 500: Service error",
+  "timestamp": "2026-10-20T19:52:03.623Z"
+}

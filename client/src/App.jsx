@@ -80,6 +80,7 @@ export default function App() {
           <Dashboard
             onSelectIncident={handleSelectIncident}
             onNewIncident={() => setActiveTab('submit')}
+            socket={socket}
           />
         )}
 

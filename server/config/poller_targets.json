@@ -1,0 +1,17 @@
+[
+  {
+    "service": "demo-lms",
+    "endpoint": "/login",
+    "method": "GET"
+  },
+  {
+    "service": "demo-lms",
+    "endpoint": "/courses",
+    "method": "GET"
+  },
+  {
+    "service": "demo-lms",
+    "endpoint": "/upload",
+    "method": "GET"
+  }
+]

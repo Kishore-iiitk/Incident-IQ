@@ -1,0 +1,9 @@
+{
+  "source": "poller",
+  "service": "demo-lms",
+  "endpoint": "/login",
+  "status": 200,
+  "latency_ms": 4015,
+  "message": "High latency detected: 4015ms (threshold: 2000ms)",
+  "timestamp": "2026-10-20T19:52:03.794Z"
+}

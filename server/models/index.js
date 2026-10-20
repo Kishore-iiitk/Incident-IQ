@@ -23,10 +23,12 @@ const incidentSchema = new Schema({
   fingerprint: { type: String, default: null, index: true },
   sources: [{ type: String }],
   affected_users: { type: Schema.Types.Mixed, default: null },
+  affected_user_ids: [{ type: String }],
   needs_review: { type: Boolean, default: true },
   error_message: { type: String, default: null },
   retrieval_status: { type: String, default: null },
   created_at: { type: Date, default: Date.now, index: true },
+  last_seen: { type: Date, default: Date.now, index: true },
   resolved_at: { type: Date, default: null }
 });
 
@@ -40,7 +42,8 @@ const artifactSchema = new Schema({
   },
   file_ref: { type: String, default: null },
   source: { type: String, default: 'user_submission' },
-  received_at: { type: Date, default: Date.now }
+  received_at: { type: Date, default: Date.now },
+  metadata: { type: Schema.Types.Mixed, default: {} }
 });
 
 // 3. Evidence

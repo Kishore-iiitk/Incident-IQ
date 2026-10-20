@@ -38,6 +38,9 @@ io.on('connection', (socket) => {
   });
 });
 
+import { startPoller } from './collectors/healthPoller.js';
+import { startLogWatcher } from './collectors/logWatcher.js';
+
 async function startServer() {
   try {
     await connectDB();
@@ -48,6 +51,14 @@ async function startServer() {
       console.log(`🚀 IncidentIQ Backend Server running on port ${PORT}`);
       console.log(`📡 Socket.IO initialized for real-time telemetry`);
       console.log(`⚙️  DEMO_MODE: ${process.env.DEMO_MODE === 'true' ? 'ENABLED (serving real recorded outputs)' : 'DISABLED (live Gemini API)'}`);
+      if (process.env.ENABLE_POLLER === 'true') {
+        console.log(`🔍 Health Poller ENABLED`);
+        startPoller();
+      }
+      if (process.env.ENABLE_LOG_WATCHER === 'true') {
+        console.log(`📜 Log Watcher ENABLED`);
+        startLogWatcher();
+      }
       console.log(`====================================================`);
     });
   } catch (err) {
