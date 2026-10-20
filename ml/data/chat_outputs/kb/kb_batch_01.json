@@ -1,0 +1,302 @@
+[
+    {
+        "id": "KB-001",
+        "family": "login_failure",
+        "service": "identity-provider",
+        "title": "Expired SAML Signing Certificate",
+        "symptoms": "Students enter their credentials and are redirected back to the LMS login screen instead of reaching their dashboard. Authentication monitoring records SAML assertion validation failures, and successful login counts drop sharply.",
+        "root_cause": "The identity provider's SAML signing certificate expired, so the LMS rejected otherwise valid authentication assertions. The certificate rotation procedure had not updated the verification certificate configured in the LMS.",
+        "resolution": "Renew the signing certificate in the identity provider and retrieve the corresponding public certificate. Update the LMS SAML configuration with the new certificate and validate the issuer, audience, and signature. Test logins with student and instructor accounts before reopening authentication to all users.",
+        "prevention": "Monitor SAML certificate expiry and automate rotation reminders with a documented certificate rollover procedure."
+    },
+    {
+        "id": "KB-002",
+        "family": "login_failure",
+        "service": "auth-service",
+        "title": "Authentication Token Rejected Due to Clock Drift",
+        "symptoms": "Students submit their credentials but repeatedly return to the login screen without gaining access. Authentication logs show valid credentials followed by token validation errors, while the identity provider reports successful authentication.",
+        "root_cause": "The authentication container's clock drifted several minutes ahead of the identity provider because its time synchronization service had stopped. Tokens were evaluated against incorrect issued-at and not-before timestamps and were rejected as invalid.",
+        "resolution": "Restore time synchronization on the affected hosts and verify that the container clocks agree with the identity provider. Restart the affected authentication instances after confirming their system time is correct. Reissue affected sessions and verify successful token validation across all application replicas.",
+        "prevention": "Monitor host clock offsets and alert when system time deviates beyond the authentication platform's permitted tolerance."
+    },
+    {
+        "id": "KB-003",
+        "family": "login_failure",
+        "service": "redis-cache",
+        "title": "Session Eviction During Login",
+        "symptoms": "Users can submit valid credentials but are sent back to the LMS login page immediately after authentication. Application traces show sessions being created successfully and then disappearing before the first authenticated request completes.",
+        "root_cause": "The Redis session store reached its memory limit and used an eviction policy that removed active session keys. The session service treated missing keys as unauthenticated requests, causing a repeated login redirect.",
+        "resolution": "Increase the Redis memory allocation after assessing capacity and configure a session-appropriate eviction policy. Remove unnecessary cache entries and verify that active session keys survive normal memory pressure. Test login flows across multiple application instances to confirm session persistence.",
+        "prevention": "Track Redis memory utilization, eviction counts, and active session-key availability with automated alerts."
+    },
+    {
+        "id": "KB-004",
+        "family": "login_failure",
+        "service": "user-db",
+        "title": "Exhausted Database Connections",
+        "symptoms": "Users enter their correct usernames and passwords but cannot complete sign-in and are returned to the login page with a generic authentication error. Monitoring shows a rise in authentication request timeouts alongside a database connection pool with no free connections.",
+        "root_cause": "A recently introduced account-audit query failed to close database connections after exceptions. The leaked connections exhausted the pool used by authentication requests, preventing the service from retrieving user records.",
+        "resolution": "Fix the audit query so connections and transactions are released in all success and error paths. Restart affected application workers to release leaked connections and restore pool availability. Verify that login queries complete normally and confirm that connection counts remain stable under load.",
+        "prevention": "Use automatic connection cleanup and monitor connection pool saturation and connection-hold duration."
+    },
+    {
+        "id": "KB-005",
+        "family": "login_failure",
+        "service": "auth-service",
+        "title": "Password Hash Algorithm Configuration Drift",
+        "symptoms": "Users with previously working accounts submit their credentials but receive an invalid-login message and cannot access the LMS. Authentication metrics show a sudden increase in password verification failures following an application release, without a corresponding rise in unknown usernames.",
+        "root_cause": "A deployment changed the configured password hashing algorithm from the algorithm used by existing password records to a different verifier. The authentication code attempted to verify legacy hashes using incompatible parameters and interpreted the result as an incorrect password.",
+        "resolution": "Restore compatibility with the hashing algorithm and parameters used for existing account records. Update the verifier to identify supported hash formats and apply the correct verification routine for each format. Test existing accounts and newly created accounts before deploying the corrected configuration.",
+        "prevention": "Include password-hash compatibility tests and configuration validation in the authentication deployment pipeline."
+    },
+    {
+        "id": "KB-006",
+        "family": "upload_failure",
+        "service": "file-upload",
+        "title": "Reverse Proxy Request Body Limit",
+        "symptoms": "Students select a file on an assignment submission page, but the upload fails and the file does not appear in the submission. Browser requests return an HTTP 413 response for affected uploads, while the upload application records no completed upload operation.",
+        "root_cause": "The reverse proxy's configured maximum request body size was lower than the file size accepted by the LMS interface. The proxy rejected requests before they reached the upload service.",
+        "resolution": "Increase the reverse proxy request body limit to match the documented LMS upload policy. Confirm that application-level size validation remains enabled and aligned with the proxy setting. Reload the proxy configuration and test uploads at, below, and above the supported size limit.",
+        "prevention": "Keep upload-size settings consistent across the browser interface, reverse proxy, and application validation layers."
+    },
+    {
+        "id": "KB-007",
+        "family": "upload_failure",
+        "service": "s3-media-storage",
+        "title": "Expired Object Storage Credentials",
+        "symptoms": "Students attempt to submit assignments, but the interface reports that the upload failed and no attachment is visible afterward. Upload service logs contain object-storage authorization errors, although incoming requests and file validation complete successfully.",
+        "root_cause": "The upload service used temporary object-storage credentials that had expired because its credential refresh process was misconfigured. The storage API rejected write requests, so submitted file contents could not be persisted.",
+        "resolution": "Restore the service's supported credential provider and renew or refresh its storage credentials. Verify that the assigned identity has the necessary object creation and multipart upload permissions for the expected bucket. Retry failed submissions safely and confirm that the resulting objects and database metadata agree.",
+        "prevention": "Use automatically refreshed workload credentials and alert on storage authorization failures before submission deadlines."
+    },
+    {
+        "id": "KB-008",
+        "family": "upload_failure",
+        "service": "file-upload",
+        "title": "Temporary Disk Exhaustion",
+        "symptoms": "Students choose assignment files and see the upload operation fail before the submission is completed. Server logs show temporary-file creation errors, and failed requests cluster on the upload nodes while file sizes remain within the configured limit.",
+        "root_cause": "Abandoned multipart uploads and temporary files accumulated on the container's writable filesystem until the available disk space was exhausted. The upload service stages incoming data locally before transferring it to object storage.",
+        "resolution": "Remove orphaned temporary files after verifying that they are not associated with active uploads. Increase available ephemeral storage if required and implement cleanup for abandoned multipart sessions. Retry failed uploads and verify that temporary disk usage decreases after successful transfers.",
+        "prevention": "Monitor filesystem free space and automatically remove expired temporary upload data using a safe retention policy."
+    },
+    {
+        "id": "KB-009",
+        "family": "upload_failure",
+        "service": "assignment-service",
+        "title": "Upload Metadata Transaction Timeout",
+        "symptoms": "Students upload assignment files, but the LMS reports a failed submission and displays no attached file. Storage logs show that file objects were written successfully, while application traces end with a timeout during submission metadata persistence.",
+        "root_cause": "The assignment service wrapped submission metadata insertion in a database transaction that waited on a locked assignment record. The transaction timed out after the file had already been stored, leaving an orphaned object without a corresponding visible submission.",
+        "resolution": "Identify and correct the transaction that holds the assignment record lock longer than necessary. Separate file transfer from short metadata transactions and implement retry-safe submission handling. Reconcile orphaned objects with valid submission records, then test concurrent uploads to the same assignment.",
+        "prevention": "Use short database transactions and idempotent upload workflows that can recover consistently after partial failures."
+    },
+    {
+        "id": "KB-010",
+        "family": "upload_failure",
+        "service": "malware-scan-service",
+        "title": "File Scanning Dependency Unavailable",
+        "symptoms": "Students submit assignment files, but every affected upload ends with a submission error and the attachment remains unavailable in the LMS. Upload metrics show requests waiting at the validation stage, while scanner health checks fail and the scanning queue grows.",
+        "root_cause": "The malware scanning service stopped accepting requests after its worker pool exhausted available memory. The upload service was configured to reject files whenever scanning could not finish, so files were not released into the submission workflow.",
+        "resolution": "Restore the scanner worker pool and correct the resource leak that caused memory exhaustion. Drain queued scan requests at a controlled rate and verify that each file receives a completed scan result. Retry eligible failed uploads and confirm that only files with successful validation become visible submissions.",
+        "prevention": "Monitor scanner memory usage, queue depth, and worker health, and define a safe recovery path for pending scans."
+    },
+    {
+        "id": "KB-011",
+        "family": "slow_or_timeout",
+        "service": "db-primary",
+        "title": "Missing Index on Course Enrollment Query",
+        "symptoms": "Students report that course pages and their dashboards take a long time to open or eventually time out. Application monitoring shows elevated database query durations and increased request latency, especially when loading course enrollment information.",
+        "root_cause": "A schema migration removed an index used by the course enrollment lookup. PostgreSQL consequently performed sequential scans over a growing enrollment table for requests that previously used indexed access.",
+        "resolution": "Inspect the query plan and confirm that the enrollment lookup performs an unnecessary sequential scan. Create an appropriate index on the frequently filtered enrollment columns using a safe production migration procedure. Refresh database statistics and verify improved query plans and page response times under representative load.",
+        "prevention": "Run query-plan regression checks for frequently used LMS queries whenever database schemas change."
+    },
+    {
+        "id": "KB-012",
+        "family": "slow_or_timeout",
+        "service": "lms-api",
+        "title": "HTTP Connection Pool Leak",
+        "symptoms": "Students experience long waits when opening normal LMS pages, and some requests end with a gateway timeout. Application metrics show rising numbers of active outbound connections and increasing request latency even though CPU utilization remains moderate.",
+        "root_cause": "A recent integration change stopped closing HTTP response bodies when retrieving course metadata from an internal service. The leaked connections exhausted the API client's connection pool, forcing unrelated page requests to wait for a free connection.",
+        "resolution": "Update the integration code to close response bodies reliably and enforce request timeouts. Restart affected application instances to release leaked connections. Exercise the affected endpoints under load and confirm that active connections return to a stable baseline after requests finish.",
+        "prevention": "Use scoped resource cleanup and track outbound connection pool utilization and request durations."
+    },
+    {
+        "id": "KB-013",
+        "family": "slow_or_timeout",
+        "service": "redis-cache",
+        "title": "Cache Stampede After Broad Invalidation",
+        "symptoms": "Course pages that normally open quickly begin loading slowly, and some requests time out during busy periods. Monitoring shows a sudden drop in cache hit rate accompanied by a large increase in database reads for course and timetable data.",
+        "root_cause": "A scheduled cache invalidation removed course-related keys simultaneously across the LMS. Concurrent requests then recalculated the same expensive database-backed results without request coalescing, overwhelming the database with duplicate work.",
+        "resolution": "Restore the necessary cache entries by allowing normal cache population to resume at a controlled rate. Introduce request coalescing or per-key locks so concurrent misses share a single computation, and stagger future invalidations. Verify that cache hit rates recover without producing another database load spike.",
+        "prevention": "Use staggered cache invalidation and stampede protection for expensive, frequently requested LMS data."
+    },
+    {
+        "id": "KB-014",
+        "family": "slow_or_timeout",
+        "service": "lms-api",
+        "title": "Slow DNS Resolution for Integration Host",
+        "symptoms": "Students find that course pages and dashboard views take unusually long to load, with some requests eventually timing out. Distributed traces show repeated delays before outbound connections begin, while the affected application endpoints spend little time executing database queries.",
+        "root_cause": "The configured DNS resolver intermittently failed to answer queries for the academic timetable integration host. The HTTP client repeatedly retried hostname resolution before retrieving timetable data required during page rendering.",
+        "resolution": "Correct the resolver configuration and repair the network path to the configured DNS servers. Validate hostname resolution from all affected application nodes and reduce excessive resolution retries while preserving appropriate failure handling. Confirm that timetable requests and dependent page loads complete within their expected response times.",
+        "prevention": "Monitor DNS query latency and failure rates from application nodes and maintain reliable resolver redundancy."
+    },
+    {
+        "id": "KB-015",
+        "family": "slow_or_timeout",
+        "service": "course-dashboard",
+        "title": "Synchronous Third-Party Calendar Dependency",
+        "symptoms": "Students report that their LMS dashboard loads slowly or fails to finish opening, even though other basic pages remain accessible. Request traces show that dashboard responses spend most of their time waiting for an external academic calendar API, whose latency has increased.",
+        "root_cause": "A dashboard release made the external calendar API call synchronously on every page request and removed the previous response timeout. Delayed responses from the third-party provider therefore held application workers open and prevented dashboards from completing promptly.",
+        "resolution": "Restore bounded connection and read timeouts for the calendar integration. Move calendar retrieval to a scheduled background refresh and serve the most recent valid result from local storage or cache. Test dashboard behavior while simulating a slow or unavailable provider to confirm that the page remains responsive.",
+        "prevention": "Isolate third-party integrations with timeouts, cached fallback data, and asynchronous refresh workflows."
+    },
+    {
+        "id": "KB-016",
+        "family": "grades_issue",
+        "service": "grade-service",
+        "title": "Grade Import Consumer Schema Mismatch",
+        "symptoms": "Students open the course gradebook and find that marks for recently evaluated assignments are missing or unchanged. Instructors can see the submitted evaluations in the assessment tool, while grade synchronization logs show repeated message processing failures.",
+        "root_cause": "The assessment tool began publishing a new event schema, but the grade synchronization consumer still expected the previous field names. The consumer rejected the messages and sent them to a dead-letter queue instead of updating grade records.",
+        "resolution": "Update the consumer to support the published event schema and validate required assessment identifiers and score fields. Replay the affected dead-letter messages after verifying that processing is idempotent and does not create duplicate grade entries. Compare the gradebook with the assessment tool to confirm that all affected marks are populated correctly.",
+        "prevention": "Version grade event schemas explicitly and run producer-consumer compatibility tests before releasing integration changes."
+    },
+    {
+        "id": "KB-017",
+        "family": "grades_issue",
+        "service": "db-replica",
+        "title": "Stale Gradebook Read Replica",
+        "symptoms": "Students see missing or outdated marks in the gradebook shortly after instructors publish or update results. The primary database contains the expected grade records, but requests routed to the read replica return older values.",
+        "root_cause": "A replica fell behind the primary database after its replication receiver encountered persistent network interruptions. The grade service continued directing read-only gradebook queries to the lagging replica without checking its replication delay.",
+        "resolution": "Restore replication connectivity and verify that the replica has replayed the pending write-ahead log records. Temporarily route gradebook reads to the primary database while the replica catches up. Confirm that the same grade values are returned by both database paths before re-enabling normal read routing.",
+        "prevention": "Monitor database replication lag and route grade-sensitive reads away from replicas that exceed the permitted lag threshold."
+    },
+    {
+        "id": "KB-018",
+        "family": "grades_issue",
+        "service": "grade-service",
+        "title": "Incorrect Assessment Weight Configuration",
+        "symptoms": "Students view marks in the course gradebook that do not match the scores and assessment weights published by their instructors. Individual assessment scores appear correct, but the calculated overall grade differs from the expected result.",
+        "root_cause": "A course template migration assigned the final examination category a weight of 60 percent instead of the intended 40 percent. The grade calculation engine correctly applied the stored configuration but produced an incorrect overall result.",
+        "resolution": "Compare the course grade configuration with the approved assessment plan and correct the category weights. Recalculate the affected overall grades using the corrected configuration and review the results with the course instructor. Verify representative student records and ensure that the gradebook displays the expected weighted totals.",
+        "prevention": "Validate assessment weights against approved course templates and require a preview of calculated grades before publishing configuration changes."
+    },
+    {
+        "id": "KB-019",
+        "family": "grades_issue",
+        "service": "grade-service",
+        "title": "Timezone Boundary Error in Submission Eligibility",
+        "symptoms": "Students find that marks for assignments submitted near the deadline are missing from the gradebook or that those submissions show an incorrect grading status. Submission records contain the expected timestamps, but the grading process excludes affected records from its eligible set.",
+        "root_cause": "The grading batch compared UTC submission timestamps against a deadline interpreted as local server time without applying the course timezone conversion. Submissions made within the deadline window were incorrectly classified as late and omitted from automatic grading.",
+        "resolution": "Correct the grading eligibility logic to compare normalized UTC timestamps using the course's explicit deadline timezone. Reprocess the affected submissions and recalculate their gradebook entries. Validate the logic with test cases immediately before, at, and after the deadline boundary.",
+        "prevention": "Store timestamps in UTC and test grading eligibility against explicit course timezones and deadline-boundary cases."
+    },
+    {
+        "id": "KB-020",
+        "family": "grades_issue",
+        "service": "redis-cache",
+        "title": "Gradebook Cache Not Invalidated",
+        "symptoms": "Students continue to see old or missing marks after instructors save grade changes in the LMS. Database checks show the correct values, but the gradebook API repeatedly returns outdated data for the affected courses.",
+        "root_cause": "A grade service update changed the cache key format without updating the invalidation handler. The handler removed entries using the old key pattern, leaving outdated gradebook responses available in Redis until their time-to-live expired.",
+        "resolution": "Align the cache key format used by grade reads and grade-update invalidation. Purge the affected stale entries and verify that subsequent reads retrieve the current database values. Update integration tests to confirm that publishing or editing a mark invalidates every relevant gradebook cache entry.",
+        "prevention": "Centralize gradebook cache-key generation and automatically test cache invalidation for all grade mutations."
+    },
+    {
+        "id": "KB-021",
+        "family": "notification_failure",
+        "service": "email-service",
+        "title": "Invalid Sender Authentication DNS Records",
+        "symptoms": "Students do not receive LMS emails announcing new assignments, grade releases, or password resets. The email service records delivery attempts, but provider responses show authentication-related rejections and delivery rates fall for messages sent from the college domain.",
+        "root_cause": "A DNS change removed the active DKIM public key and left the SPF record inconsistent with the current sending infrastructure. Recipient mail servers rejected or quarantined messages because the sender could not be authenticated reliably.",
+        "resolution": "Restore the correct SPF record and publish the DKIM public key matching the email service's active signing key. Verify the records using external DNS lookups and send test messages to representative recipient providers. Retry eligible failed messages after confirming that sender authentication passes.",
+        "prevention": "Manage SPF and DKIM records through reviewed changes and monitor domain authentication results from outbound mail."
+    },
+    {
+        "id": "KB-022",
+        "family": "notification_failure",
+        "service": "email-service",
+        "title": "SMTP Provider Throttling",
+        "symptoms": "Students stop receiving expected LMS email notifications even though the underlying assignment, grade, or account event occurs successfully. Monitoring shows a growing outbound email queue, repeated temporary SMTP rejection responses, and messages that remain pending delivery.",
+        "root_cause": "The LMS exceeded the sending quota imposed by its external SMTP provider during a bulk notification run. The email worker retried rejected messages too aggressively, consuming available connections and delaying normal notifications.",
+        "resolution": "Reduce the outbound sending rate to comply with the provider's documented quota and implement exponential backoff with jitter for temporary rejections. Process the queued messages gradually while preserving delivery status and idempotency. Verify successful delivery and confirm that queue depth decreases without generating duplicate notifications.",
+        "prevention": "Apply provider-aware rate limits and monitor SMTP rejection rates, retry volumes, and outbound queue age."
+    },
+    {
+        "id": "KB-023",
+        "family": "notification_failure",
+        "service": "notification-queue",
+        "title": "Disabled Email Event Subscription",
+        "symptoms": "Students do not receive email alerts for LMS events that normally trigger notifications. The source application logs successful event publication, but notification monitoring shows that the email consumer receives no corresponding events.",
+        "root_cause": "A deployment changed the message broker subscription configuration and disabled the email consumer's subscription to the course-events topic. Events were published successfully by application services but never reached the email notification worker.",
+        "resolution": "Restore the email consumer's subscription and verify the configured topic, consumer group, and access permissions. Reprocess retained events that have not expired, using event identifiers to prevent duplicate sends. Trigger test assignment and grade events and verify that the email worker receives and handles them.",
+        "prevention": "Add deployment validation that checks required event subscriptions and alerts when published notification events are not consumed."
+    },
+    {
+        "id": "KB-024",
+        "family": "notification_failure",
+        "service": "notification-service",
+        "title": "Notification Preferences Changed During Migration",
+        "symptoms": "Students no longer receive email notifications for course announcements and assignment updates, even though their accounts remain active and related LMS events are generated normally. Notification audit logs show that messages were suppressed by preference checks rather than rejected by the mail provider.",
+        "root_cause": "An account migration mapped a missing notification preference field to false instead of preserving the previous opt-in default. The notification service therefore interpreted affected students as having disabled email notifications.",
+        "resolution": "Correct the migration mapping and restore preference values from the available pre-migration records or the college's approved default policy. Update affected account settings and verify that legitimate notification subscriptions are active. Generate test events for affected accounts and confirm that the preference evaluator allows delivery.",
+        "prevention": "Test preference migrations against legacy account records and preserve explicit user choices separately from default values."
+    },
+    {
+        "id": "KB-025",
+        "family": "notification_failure",
+        "service": "notification-service",
+        "title": "Outbox Worker Blocked by Database Lock",
+        "symptoms": "Students do not receive notification emails after course activity, even though the LMS records the underlying actions successfully. The notification outbox grows over time, and worker logs show database lock waits instead of successful message dispatches.",
+        "root_cause": "A maintenance transaction held a lock on the notification outbox table while the dispatch worker attempted to claim pending records. The worker's queries repeatedly timed out, preventing queued events from reaching the email service.",
+        "resolution": "Identify and shorten the transaction holding the outbox lock, scheduling the maintenance operation outside periods of heavy notification activity where appropriate. Restart or resume the dispatch workers and process retained outbox records using transactional claiming. Verify that queue age returns to normal and that messages are not sent more than once.",
+        "prevention": "Keep outbox maintenance transactions short and monitor database lock waits, dispatch failures, and pending notification age."
+    },
+    {
+        "id": "KB-026",
+        "family": "video_playback",
+        "service": "cdn",
+        "title": "Invalid Signed Video URL",
+        "symptoms": "Students open a lecture page, but the video player remains on its loading indicator and eventually displays a playback error. Browser network traces show authorization failures when retrieving the video manifest, while the lecture page itself loads normally.",
+        "root_cause": "A CDN signing-key rotation updated the key used to generate playback URLs but left the edge validation configuration using the previous key. The CDN rejected otherwise valid video requests because their signatures could not be verified.",
+        "resolution": "Update the CDN edge configuration with the active signing key and confirm that the signing and validation algorithms match. Invalidate any cached manifests or signed responses that contain unusable authorization data. Generate fresh playback URLs and test lecture playback from both authenticated campus and off-campus sessions.",
+        "prevention": "Use coordinated signing-key rotation with overlap periods and automated end-to-end validation of signed video URLs."
+    },
+    {
+        "id": "KB-027",
+        "family": "video_playback",
+        "service": "video-transcoding",
+        "title": "Unsupported Transcoded Video Codec",
+        "symptoms": "Students can open a lecture page, but the embedded video will not begin playing and the player reports a media decoding error. Monitoring shows that the video assets are reachable and the streaming requests return successful HTTP responses, yet browser playback fails.",
+        "root_cause": "A transcoding profile change produced lecture segments using a codec unsupported by the college's target browser configuration. The transcoding job completed successfully, so the media pipeline marked the assets as ready despite their incompatibility with supported playback clients.",
+        "resolution": "Restore a transcoding profile that produces a codec and profile compatible with supported browsers. Reprocess the affected lecture files and verify the generated manifest, segment metadata, and audio-video compatibility. Test playback on the supported desktop and mobile browser matrix before publishing the replacement assets.",
+        "prevention": "Run automated codec compatibility tests against supported playback clients before marking transcoded lecture assets as ready."
+    },
+    {
+        "id": "KB-028",
+        "family": "video_playback",
+        "service": "video-streaming",
+        "title": "HTTP Range Headers Stripped by Proxy",
+        "symptoms": "Students start a lecture video but see a playback error or a loading indicator that never clears. Browser network traces show that media segment or byte-range requests receive unexpected full-file responses or HTTP 416 errors instead of the partial content required by the player.",
+        "root_cause": "A reverse proxy configuration removed or rewrote HTTP Range headers on requests forwarded to the media origin. The streaming service could not correctly serve the byte ranges requested by the browser's media pipeline.",
+        "resolution": "Correct the proxy configuration so valid Range and Content-Range headers pass through unchanged. Verify that the origin returns appropriate HTTP 206 responses for valid byte-range requests and handles invalid ranges consistently. Test playback from the beginning, after seeking, and after resuming a paused lecture.",
+        "prevention": "Include byte-range request validation in the deployment tests for proxies and media delivery endpoints."
+    },
+    {
+        "id": "KB-029",
+        "family": "video_playback",
+        "service": "s3-media-storage",
+        "title": "Video Origin Read Permission Removed",
+        "symptoms": "Students open lecture pages, but the video player fails to load the requested media and displays a playback error. CDN logs show origin fetch failures and storage access-denied responses for lecture objects that were previously available.",
+        "root_cause": "A storage policy update removed the GetObject permission required by the CDN's origin access identity. Video manifests and segments remained stored, but the CDN could no longer retrieve them from the private object-storage bucket.",
+        "resolution": "Restore the narrowly scoped object-read permission for the CDN origin identity in the correct bucket policy. Confirm that public access remains disabled and test access through the CDN rather than exposing the storage bucket directly. Invalidate failed cached responses and verify playback of the affected lectures.",
+        "prevention": "Validate CDN origin permissions automatically whenever storage policies or origin identities change."
+    },
+    {
+        "id": "KB-030",
+        "family": "video_playback",
+        "service": "drm-license-service",
+        "title": "Digital Rights License Endpoint Unavailable",
+        "symptoms": "Students can open lecture pages, but protected lecture videos remain stuck loading or show a playback error before the first frame appears. Browser diagnostics show successful media manifest retrieval followed by failed license requests, and license-service health checks report connection errors.",
+        "root_cause": "The external digital rights management license endpoint was unavailable after a provider-side network change. The player required a valid playback license before decrypting protected lecture segments, so the media could not start even though the video files were accessible.",
+        "resolution": "Restore connectivity to the license provider and validate endpoint configuration, TLS trust, and required network routes. Verify that license requests complete successfully for authorized student accounts and that the responses match the expected DRM protocol. Retest protected lectures using fresh player sessions after confirming license issuance and playback.",
+        "prevention": "Monitor license endpoint availability and maintain a tested provider escalation and recovery procedure for protected media playback."
+    }
+]
