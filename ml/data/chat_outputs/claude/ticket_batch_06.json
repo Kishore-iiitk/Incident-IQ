@@ -1,0 +1,252 @@
+[
+  {
+    "spec_id": "SPEC-0251",
+    "title": "Course catalog lookups returning stale class metadata from redis-cache",
+    "description": "Since the 02:15 cache node restart, GET /catalog/courses?term=FA26 is returning class metadata that is 2 to 3 days old for roughly one department's listings, with TTL on the affected keys showing -1 in redis-cli. Flushing the catalog:* keyspace on that shard brings back fresh data for a while, but the stale entries return within the hour. No data has been lost, since the source records in the course DB are intact."
+  },
+  {
+    "spec_id": "SPEC-0252",
+    "title": "Cant submit my citation appeal",
+    "description": "hey, the citation appeal form keeps spinning on my account only, but I can just email the parking office the details so no rush."
+  },
+  {
+    "spec_id": "SPEC-0253",
+    "title": "Bug report widget fails to attach screenshots on Safari builds",
+    "description": "The in-app feedback widget throws 'TypeError: html2canvas is not a function' when submitting from Safari 17 on the course pages, and 3 testers on the QA team have reproduced it. Text-only reports still submit fine, so people can leave a written description in the meantime. Started after yesterday's widget bundle update (v2.8.1)."
+  },
+  {
+    "spec_id": "SPEC-0254",
+    "title": "Website looks broken and plain on my laptop",
+    "description": "Hello, since this morning the course site looks completely unstyled for me, with no colors and the layout all jumbled, and some videos won't play either. I tried a different browser and clearing my cache but nothing changed. Could someone please look into it?"
+  },
+  {
+    "spec_id": "SPEC-0255",
+    "title": "Nothing on the platform will load",
+    "description": "Hi, nobody in my study group or anyone I've asked can open any part of the learning platform since around 9:40 this morning, it just shows a gateway error and there's no other way in, so we can't do anything."
+  },
+  {
+    "spec_id": "SPEC-0256",
+    "title": "Transcript PDF download returns 500 for many students",
+    "description": "Multiple registrar requests report POST /transcripts/generate failing with 500 'signature timeout: HSM unreachable (code 504-HSM)', though a manually requested unofficial copy from the registrar office is an acceptable stopgap."
+  },
+  {
+    "spec_id": "SPEC-0257",
+    "title": "forum replies vanishing",
+    "description": "a bunch of students in the OS and networks course boards are saying their posted replies disappear after refresh and they're gone for good, no way to get them back."
+  },
+  {
+    "spec_id": "SPEC-0258",
+    "title": "Dashboard blank for everybody",
+    "description": "Hey team, the main dashboard and course shell pages are showing a white screen for every user I've heard from, students and instructors both. Weirdly the direct course links people had bookmarked still open fine, so folks are getting by with those. Browser console shows a 'ChunkLoadError: Loading chunk 14 failed' right after the 11:05 deploy, if that helps."
+  },
+  {
+    "spec_id": "SPEC-0259",
+    "title": "Profile photo upload coming out stretched",
+    "description": "Dear support, when I upload a new profile photo it ends up squashed and the thumbnail is cropped at the wrong spot, and this has only happened on my account as far as I know. Uploading a square version of the same picture helps a bit but the crop is still slightly off. Could you please check what is going on when you get a moment?"
+  },
+  {
+    "spec_id": "SPEC-0260",
+    "title": "Short-answer quiz scores look wrong",
+    "description": "Good afternoon, several of us in the Thermodynamics section noticed that our short-answer quiz marks were lower than what we expected, and the multiple choice part seems fine. Our instructor says she can rescore the quizzes by hand, so it is not blocking us, but we wanted to flag it. Please let us know when the autograder is corrected."
+  },
+  {
+    "spec_id": "SPEC-0261",
+    "title": "Lab file upload stuck at 100%",
+    "description": "Hello, a few of us in the Signals Lab group can't finish uploading our lab report PDFs, the progress bar reaches 100% and then shows 'Upload failed (413)'. If we shrink the PDFs under about 10 MB they go through, so we are managing, but the limit seems much lower than it used to be. Thanks for taking a look."
+  },
+  {
+    "spec_id": "SPEC-0262",
+    "title": "ALERT cdn-edge cache miss rate 98% all PoPs",
+    "description": "cdn-edge: origin_fetch_ratio=0.98 across all edge nodes for 25m, threshold 0.30. Static JS/CSS/media returning 5xx intermittently from origin, p95 latency 4.2s. No fallback path configured; on-call acknowledged."
+  },
+  {
+    "spec_id": "SPEC-0263",
+    "title": "Sentiment ratings not saved for many users",
+    "description": "Many users report that the thumbs up/down rating in the feedback widget returns 'Request failed: 422 invalid_payload' on submit. Free-text comments still work, so users can describe the issue there as a substitute. Validation schema in sentiment-handler looks to have rejected the new emoji field."
+  },
+  {
+    "spec_id": "SPEC-0264",
+    "title": "Textbook lists not showing for the fall courses",
+    "description": "Hi, many of us can't see the required textbook lists on the bookstore site, it just says 'No items found' for most courses. A couple of people are working from the class syllabus PDFs instead, but the bookstore prices and availability are what we need."
+  },
+  {
+    "spec_id": "SPEC-0265",
+    "title": "Midterm session won't start for a section of CS students",
+    "description": "Engineering ticket from proctoring desk: 12 students in section B hit 'Lockdown session failed to initialize (ERR_PROCTOR_4012)' when launching the timed midterm, and retries after relaunching the browser give the same error. The exam window closes at 15:00 and there is no alternate way to take it in the portal."
+  },
+  {
+    "spec_id": "SPEC-0266",
+    "title": "transcript-pdf-generator queue backlog",
+    "description": "WARN transcript-pdf-generator queue_depth=340 (threshold 100) for 18m, 3 workers unhealthy; requests will complete on retry, manual registrar issuance available."
+  },
+  {
+    "spec_id": "SPEC-0267",
+    "title": "Course pages loading really slowly",
+    "description": "Hi, lots of students and I have found that course and class detail pages take almost a minute to load today, although they eventually open. It would be great if this could be sorted soon, but refreshing a few times sometimes helps."
+  },
+  {
+    "spec_id": "SPEC-0268",
+    "title": "maintenance banner not showing",
+    "description": "heads up lots of people said they never saw the maintenance notice banner last night, and there's no other place where it gets posted"
+  },
+  {
+    "spec_id": "SPEC-0269",
+    "title": "Signed transcripts missing registrar seal image on generated PDFs",
+    "description": "Many users who requested official transcripts since Monday received PDFs where the registrar seal renders as a blank box, with logs showing 'WARN asset fetch failed: seal_v3.png 404'. The cryptographic signature validates correctly, so the documents are still verifiable. Requesting the transcript again from the registrar's counter produces a stamped paper copy, which people are using for now."
+  },
+  {
+    "spec_id": "SPEC-0270",
+    "title": "api-gateway TLS handshake failures on 3 nodes",
+    "description": "ALERT api-gateway: tls_handshake_error_rate=47% on gw-02, gw-05, gw-06 since 08:12 UTC, cert chain validation error x509: certificate has expired; no failover route available."
+  },
+  {
+    "spec_id": "SPEC-0271",
+    "title": "Reports page seems behind on data",
+    "description": "Hi, the numbers on my reports page look about an hour out of date compared with what I just entered, but if I switch to the main view it shows the correct figures."
+  },
+  {
+    "spec_id": "SPEC-0272",
+    "title": "my submission disappeared",
+    "description": "hey my homework upload vanished from the portal after I hit submit and I got no receipt, but I still have the file so I can resubmit"
+  },
+  {
+    "spec_id": "SPEC-0273",
+    "title": "Some lecture recordings are gone",
+    "description": "Hello, a few of the recorded lectures from last week seem to have disappeared and I only get a blank player. Some of them might be recoverable from the instructor's backups, I'm not sure. Could you check what happened to them?"
+  },
+  {
+    "spec_id": "SPEC-0274",
+    "title": "Directory lookups failing across campus accounts",
+    "description": "Dear IT, since early this morning no one I have contacted, faculty or students, can be found in the people directory, and searches return 'No results' every time. We can still reach colleagues through direct emails we had saved, but anything that relies on looking people up is stuck. Could you please let us know when this will be fixed?"
+  },
+  {
+    "spec_id": "SPEC-0275",
+    "title": "Nightly digest missing for some users",
+    "description": "A handful of users did not get their nightly notification digest last night. Not sure of the cause yet, the cron job seemed to run but the output looks incomplete. Users can still see everything by logging in, so I am parking it here for someone to review."
+  },
+  {
+    "spec_id": "SPEC-0276",
+    "title": "Helpdesk form won't take my laptop ticket",
+    "description": "hi, I tried to log a ticket for my broken laptop charger on the helpdesk site and it just throws an error when I hit submit, only on my account I think. I emailed the support address as a backup and a person replied that they would add it manually, but the form should still be checked."
+  },
+  {
+    "spec_id": "SPEC-0277",
+    "title": "Search returning empty for syllabi and forum posts",
+    "description": "Elasticsearch cluster status is yellow since 06:30, and queries against the syllabi and forum_posts indices intermittently return 0 hits with 'search_phase_execution_exception: no_shard_available_action_exception' for a lot of users. Browsing to courses by navigation still works, and library resource search is returning partial results, so users have a partial workaround."
+  },
+  {
+    "spec_id": "SPEC-0278",
+    "title": "Weighted final grade off for one course gradebook",
+    "description": "The gradebook for course ECE-4210 shows final grades about 2.3 points lower than the manual calculation, and it looks like the rubric weighting for the lab component is applied twice (weights summing to 115%). Other courses are unaffected. Instructor is able to override grades manually, but the underlying calc needs a fix before letter grades post on Friday."
+  },
+  {
+    "spec_id": "SPEC-0279",
+    "title": "Donation page error",
+    "description": "A few alumni mentioned the donation campaign page throws an error at checkout, they can donate through the phone line meanwhile."
+  },
+  {
+    "spec_id": "SPEC-0280",
+    "title": "No push or SMS alerts going out to anyone",
+    "description": "hey, noticed that none of the push or text alerts have been arriving for anyone since this afternoon, even the test ones I sent to my own phone. The real-time banners in the app do still pop up though, so people can see it there if they happen to be logged in."
+  },
+  {
+    "spec_id": "SPEC-0281",
+    "title": "Course evaluation survey won't submit",
+    "description": "Hello, a few of us in the Chemistry 201 section got an error when we pressed Submit on the end-of-semester evaluation, and the page just reloaded with our answers cleared. Retrying a bit later or from a phone seems to work for most of us, so we're okay, but I wanted to let you know. Thanks!"
+  },
+  {
+    "spec_id": "SPEC-0282",
+    "title": "Grades changed or missing for one student",
+    "description": "One student's grades in the Data Structures course look wrong and some earlier scores seem to have been overwritten, but I haven't dug into it. The instructor has the original grading sheet and can re-enter the values by hand if needed."
+  },
+  {
+    "spec_id": "SPEC-0283",
+    "title": "transcript-pdf-generator: generation latency elevated",
+    "description": "INFO transcript-pdf-generator: p95 render time 18s (baseline 4s) across all instances, requests completing, no errors; retry or wait is sufficient."
+  },
+  {
+    "spec_id": "SPEC-0284",
+    "title": "Transcript download takes forever",
+    "description": "Hello, whenever I try to download my transcript it takes more than a minute to produce the PDF, and from what I hear from others in my hall the same thing is happening to them. It does finish eventually, so I'm just waiting it out, but I thought you should know."
+  },
+  {
+    "spec_id": "SPEC-0285",
+    "title": "Alumni directory search ignoring graduation year filter",
+    "description": "A few alumni testers report that selecting a graduation year in the directory search still returns all years. The API call is GET /alumni/search?gradYear=2009 and the response contains records spanning 1998 to 2022, so the filter parameter seems to be dropped by the query builder. Searching by name works fine, so users can narrow results that way for now."
+  },
+  {
+    "spec_id": "SPEC-0286",
+    "title": "Uploads failing, files lost",
+    "description": "Uploader is dropping files for everyone: users get a success tick but the files aren't in the course folders afterward, and there is no way around it."
+  },
+  {
+    "spec_id": "SPEC-0287",
+    "title": "Not getting assignment reminders",
+    "description": "Hi there, many of us in the engineering batch have stopped receiving the assignment due-date reminder notifications over the last two days. If we open the course page we can still see due dates, so we are manually checking each day, but it's annoying. Could you look at it please?"
+  },
+  {
+    "spec_id": "SPEC-0288",
+    "title": "Enrollment CSV export is truncated",
+    "description": "Dear team, a few of us in the admin office noticed that the enrollment CSV we export ends after exactly 10,000 rows, while the term has around 14,000 registrations. Running the export in two date ranges gets all the rows, so we can work around it. Please let us know if the row limit can be fixed."
+  },
+  {
+    "spec_id": "SPEC-0289",
+    "title": "Grades not posting for many courses",
+    "description": "Hello, several instructors from our department report that letter grades they finalized this morning are not appearing on student gradebooks and the post button just hangs. We tried the usual steps and nothing seems to help, and students are starting to ask when they will be able to see their results. Please advise as soon as you can."
+  },
+  {
+    "spec_id": "SPEC-0290",
+    "title": "SAML assertion validation failing for all logins",
+    "description": "All SSO logins are failing since 07:50 with 'SAMLResponse rejected: InResponseTo mismatch (status urn:oasis:names:tc:SAML:2.0:status:Responder)' and login success rate has fallen from 99.8% to 0%. The IdP metadata rotated overnight and the SP still holds the old signing cert, and there is no local-login fallback enabled."
+  },
+  {
+    "spec_id": "SPEC-0291",
+    "title": "parking site down?",
+    "description": "is anyone else unable to open the parking decal registration page? it times out for everyone in our dept and we need to get permits sorted before the lot enforcement starts next week, there's no other way to register as far as I know"
+  },
+  {
+    "spec_id": "SPEC-0292",
+    "title": "login weird for a lot of people",
+    "description": "lots of ppl getting kicked back to login screen, but trying again sometimes works"
+  },
+  {
+    "spec_id": "SPEC-0293",
+    "title": "forums wiping posts",
+    "description": "all course forums are losing posts, whatever was written yesterday is gone and nobody can get it back"
+  },
+  {
+    "spec_id": "SPEC-0294",
+    "title": "Dark mode keeps resetting for me",
+    "description": "Hi, my dark mode setting switches back to the default light theme every time I log in, and it appears to be just on my own account. I can toggle it again after logging in, so it's only a small annoyance, but it happens every single day. Thank you for looking into it."
+  },
+  {
+    "spec_id": "SPEC-0295",
+    "title": "Waitlist position seems wrong",
+    "description": "Hi, a couple of us on the same course waitlist noticed our positions don't match what the advisor says they should be, but the advisor can confirm the right order by hand. Thanks."
+  },
+  {
+    "spec_id": "SPEC-0296",
+    "title": "rbac-policy-engine: TA role permission denied",
+    "description": "WARN rbac-policy-engine: authz deny user=ta_81234 action=gradebook.view role=TA course=CS3310 count=27/5m; instructor granted access manually, single user affected."
+  },
+  {
+    "spec_id": "SPEC-0297",
+    "title": "course-service down: roster and syllabus 503",
+    "description": "ALERT course-service: health check failing on 100% of pods, /courses/* returning 503 for all callers since 10:03; no fallback or cached route available."
+  },
+  {
+    "spec_id": "SPEC-0298",
+    "title": "lecture videos got deleted",
+    "description": "lots of recorded lectures are missing from the bucket after the cleanup job ran, student videos too, and we only have partial copies from some instructors"
+  },
+  {
+    "spec_id": "SPEC-0299",
+    "title": "No text alert on my phone",
+    "description": "Hello, I'm not getting SMS alerts on my phone anymore, though the email ones still come through, so I'm fine for the moment. Just wanted to mention it."
+  },
+  {
+    "spec_id": "SPEC-0300",
+    "title": "Submissions gone from Computer Networks assignment",
+    "description": "Hello, a few of us in the Computer Networks class submitted our assignment last night and now the portal shows no submission for us at all, and the turn-in receipts have disappeared too. We can't find any way of recovering them on our side, and the deadline has passed, so we are worried about the late penalty. Please help."
+  }
+]

@@ -1,0 +1,252 @@
+[
+  {
+    "spec_id": "SPEC-0201",
+    "title": "Uploads failing for multiple users",
+    "description": "Several people across different courses are reporting that file uploads just don't go through anymore, whether it's lab files, PDFs or slide decks. Nothing we've tried on the client side helps and there's no alternate way for them to attach files right now. Haven't dug into logs yet."
+  },
+  {
+    "spec_id": "SPEC-0202",
+    "title": "Dashboard showing old data, nothing seems to update",
+    "description": "Hello IT team, since this morning every page I use that reads data (course lists, grade views, my enrollment status) shows information that is clearly stale, and changes I made an hour ago are not appearing. Colleagues in other departments are seeing the same thing, so it doesn't look limited to me. I couldn't find any way around it on my end. Could someone look into this when possible? Thank you."
+  },
+  {
+    "spec_id": "SPEC-0203",
+    "title": "Textbook list pages 500 for a subset of courses, search works",
+    "description": "Since the 02:10 catalog reindex, GET /catalog/textbooks?course=CSE* returns HTTP 500 with 'NullPointerException: isbn13 is null' for roughly a third of course listings, based on the access logs. Merchandise pages and the global item search still respond normally, so users can find the same books by title or ISBN. Looks like a few records ended up with null ISBN fields after the import."
+  },
+  {
+    "spec_id": "SPEC-0204",
+    "title": "Store catalog images 404ing for everyone",
+    "description": "Product thumbnails on the bookstore catalog return 404 from /static/catalog/img/ for all visitors, but item names and prices render and the full-size images open via the detail page."
+  },
+  {
+    "spec_id": "SPEC-0205",
+    "title": "Three tenants getting 502s on /v2/sessions via edge proxy",
+    "description": "Three partner integrations (hostnames ending in -ext.campus.example) are receiving 502 Bad Gateway on every call to /v2/sessions since about 14:35 UTC. Edge log shows 'upstream prematurely closed connection' and 'SSL routines: tlsv1 alert unknown ca' for those routes only. Other routes and tenants are unaffected, and these three have no fallback endpoint to switch to."
+  },
+  {
+    "spec_id": "SPEC-0206",
+    "title": "My nightly backup job did not finish",
+    "description": "Hi, the nightly backup for my research database finished only the snapshot but the archive upload to cold storage failed last night. I can still pull the snapshot manually, though the older archive copies are not refreshed."
+  },
+  {
+    "spec_id": "SPEC-0207",
+    "title": "ALERT assignment-service anomaly",
+    "description": "[WARN] assignment-service: abnormal error ratio on submit endpoint. Receipt generation intermittently failing across all courses. Late penalty evaluation status unknown. Instances: all. Started ~09:40. Manual instructor-side acceptance appears to work."
+  },
+  {
+    "spec_id": "SPEC-0208",
+    "title": "Course evaluation form throws error on final page for all users",
+    "description": "POST /survey/submit returns 504 on the final page of the end-of-semester evaluation for all respondents; saving partial answers as draft still works, so people can return later."
+  },
+  {
+    "spec_id": "SPEC-0209",
+    "title": "calendar not syncing for me",
+    "description": "hey my calendar seems off, some lecture series events are missing on my view. i can see them if i go to the web page directly but my phone feed doesnt show them. everyone else on my team looks fine so maybe its just me?"
+  },
+  {
+    "spec_id": "SPEC-0210",
+    "title": "ALERT api-gateway 403 rate on client id usr-48213",
+    "description": "api-gateway: sustained 403 responses (100%) for single client_id usr-48213 across all routes since 11:12 IST. WAF rule id 942100 matched. All other clients nominal, error ratio global 0.01%. No alternate route available for affected client."
+  },
+  {
+    "spec_id": "SPEC-0211",
+    "title": "Multipart upload completes but files corrupted for 4 users",
+    "description": "Four users report uploads showing 100% and success, but stored objects have 0 bytes (checksum mismatch, ETag d41d8cd9...). Their original lab files were overwritten and are gone from the store, and re-uploading produces the same result."
+  },
+  {
+    "spec_id": "SPEC-0212",
+    "title": "Journal reserve link broken",
+    "description": "Hi, one of my reserve readings in the library section won't open, it just shows a blank page. I can find it through the library website directly."
+  },
+  {
+    "spec_id": "SPEC-0213",
+    "title": "not getting SMS alerts on my number",
+    "description": "my SMS notifications stopped coming but push still works, so I'm just using the app for now"
+  },
+  {
+    "spec_id": "SPEC-0214",
+    "title": "my profile shows old department",
+    "description": "Hi, my directory profile still lists my old department even though HR updated it last week, and the staff page shows the wrong dept under my name. Only mine seems affected as far as I can tell. If someone can fix the LDAP record, great. For now I can manually edit it in my own settings, which seems to be sticking."
+  },
+  {
+    "spec_id": "SPEC-0215",
+    "title": "cant post replies in two courses",
+    "description": "Hey, a few of us in CS204 and CS231 can't post replies in the forum, the Submit button spins and then says 'Request failed (409)'. Starting a brand new thread seems to work though, so we're doing that for now. About 5 or 6 people so far."
+  },
+  {
+    "spec_id": "SPEC-0216",
+    "title": "survey page",
+    "description": "Hello, the evaluation survey looked odd on my laptop and the submit button was greyed out, but it worked fine when I tried it again on my phone."
+  },
+  {
+    "spec_id": "SPEC-0217",
+    "title": "ALERT assignment-service submission dropped for user 20481",
+    "description": "assignment-service: submission id sub_7f3a91 for user 20481 acked 202 but not persisted; receipt not issued. Data lost: uploaded answer file missing from storage. No other users affected. User can resubmit within the deadline window."
+  },
+  {
+    "spec_id": "SPEC-0218",
+    "title": "Submissions vanished for 3 students on HW4",
+    "description": "Three students' HW4 submissions returned 200 but no row exists in submissions table (txn rolled back, deadlock detected). The files are lost; they can easily re-submit before the extension."
+  },
+  {
+    "spec_id": "SPEC-0219",
+    "title": "ALERT api-gateway down: 100% 5xx",
+    "description": "api-gateway: all upstream health checks failing, 100% 5xx on every route since 16:02 UTC, TLS handshake error rate spiking, no healthy backends."
+  },
+  {
+    "spec_id": "SPEC-0220",
+    "title": "Lost my submission, and so did others",
+    "description": "Dear support, several of us in the same course submitted homework last night, got confirmation pages, but the submissions are no longer showing and the receipts are gone. We can email the files to the instructor in the meantime, but we'd like the originals restored. Please advise."
+  },
+  {
+    "spec_id": "SPEC-0221",
+    "title": "Grades gone / wrong everywhere",
+    "description": "Hello, I teach two sections and this morning all the grades I entered this week are missing from the gradebook, and my students are seeing blank or zero totals. Several other instructors told me the same is happening for them. I don't see any way to view or re-enter them at the moment. Please help as soon as you can."
+  },
+  {
+    "spec_id": "SPEC-0222",
+    "title": "quiz scores coming out wrong for a bunch of ppl",
+    "description": "quizzes in a bunch of courses are scoring short-answer wrong, marking correct answers as 0, but instructors can regrade manually for now"
+  },
+  {
+    "spec_id": "SPEC-0223",
+    "title": "Keep getting logged out repeatedly",
+    "description": "Hello, many of us in the building have been getting logged out every few minutes since around 10 AM, and when we log back in we get kicked out again almost immediately. We've tried different browsers and clearing cookies, no luck. This is making it impossible to do any work, as nobody on my floor can stay signed in. Thanks for checking."
+  },
+  {
+    "spec_id": "SPEC-0224",
+    "title": "ALERT lms-web dashboard render errors on 3 accounts",
+    "description": "lms-web: dashboard widget 'My Courses' throws TypeError (undefined reading 'sections') for 3 accounts, count=3, started 08:55. Other users unaffected. Direct course URLs still load, so affected users can navigate via bookmarks."
+  },
+  {
+    "spec_id": "SPEC-0225",
+    "title": "ALERT course-service roster sync lag for 4 course shells",
+    "description": "course-service: roster update latency 38 min on 4 course shells (CSE311, CSE327, ECE204, MAT102). Module listings and syllabus pages are loading fine. New enrollments not appearing in rosters; instructors can add students manually as a stopgap."
+  },
+  {
+    "spec_id": "SPEC-0226",
+    "title": "Everything reads stale since the database change",
+    "description": "Hi team, since the overnight maintenance window, absolutely everything I load (course lists, announcements, student records) shows old information, and new changes don't appear even after several refreshes. It affects the whole campus as far as I can tell, since my colleagues in admin and the labs say the same. There's nothing I can do from my side to get current data. Could you look at this please?"
+  },
+  {
+    "spec_id": "SPEC-0227",
+    "title": "audit exports stopped for everyone",
+    "description": "SIEM export job hasnt pushed any audit logs since last night, no files in the compliance bucket and no workaround yet"
+  },
+  {
+    "spec_id": "SPEC-0228",
+    "title": "nightly snapshots not running at all",
+    "description": "hey, noticed no new db snapshots in the archive since monday, it looks like the nightly job isn't kicking off for any database. Cron entry is there but the log says 'archiver: lock file stale'. No alternative path to pull a backup right now."
+  },
+  {
+    "spec_id": "SPEC-0229",
+    "title": "ALERT enrollment-service waitlist corruption",
+    "description": "enrollment-service: waitlist position inconsistencies detected on 40+ course sections, duplicate positions and 112 dropped waitlist entries (data loss confirmed). Prereq checks passing. Registrar can reorder manually for part of the affected sections as a stopgap."
+  },
+  {
+    "spec_id": "SPEC-0230",
+    "title": "QR check-in rejecting scans in several lecture halls",
+    "description": "QR scans in several halls return 'token expired (ATT-114)' for many students; Wi-Fi check-in still logs attendance correctly, so use that as an interim path."
+  },
+  {
+    "spec_id": "SPEC-0231",
+    "title": "survey",
+    "description": "Hi, the survey link wouldn't open for me the first time but a refresh fixed it."
+  },
+  {
+    "spec_id": "SPEC-0232",
+    "title": "ALERT live-classroom-stream degraded for 5 sessions",
+    "description": "live-classroom-stream: packet loss 18% and frequent ICE disconnects on 5 hybrid sessions in Hall B this morning. Screen sharing intermittently freezing for remote participants. Audio-only fallback available for affected users."
+  },
+  {
+    "spec_id": "SPEC-0233",
+    "title": "Single user unable to upload any file",
+    "description": "User jdoe reports every upload attempt fails with 'HTTP 413 Request Entity Too Large' even on 200 KB PDFs. Other users can upload fine, and no alternate upload method has been identified."
+  },
+  {
+    "spec_id": "SPEC-0234",
+    "title": "ALERT exam-portal elevated latency, all sessions",
+    "description": "exam-portal: question delivery p95 latency 9.4s across all active sessions, proctoring handshake slow but succeeding. Candidates can proceed after refresh."
+  },
+  {
+    "spec_id": "SPEC-0235",
+    "title": "my profile pic got wiped",
+    "description": "my profile photo disappeared after I tried cropping it, the old one is gone too and it won't let me upload a new one"
+  },
+  {
+    "spec_id": "SPEC-0236",
+    "title": "TLS termination failing across all hostnames after cert rotation",
+    "description": "Following the 03:15 certificate rotation, all public hostnames behind the edge tier are serving an expired intermediate chain, and clients report 'ERR_CERT_DATE_INVALID' or handshake failures. Every service is unreachable over HTTPS, and no direct route to backends exists. Rolled-back config has not been tried yet."
+  },
+  {
+    "spec_id": "SPEC-0237",
+    "title": "A few of our backups are missing a day",
+    "description": "Hello, a few of the departmental databases we manage show no snapshot for last night in the archive listing. Running the backup script manually produced a valid snapshot, so we're covered for now."
+  },
+  {
+    "spec_id": "SPEC-0238",
+    "title": "cold archive uploads timing out",
+    "description": "hi, the cold archive step is timing out for a lot of the nightly jobs, i'm seeing 'upload exceeded 3600s' in the logs for maybe 12 of the dbs. snapshots themselves finish fine locally, and I can push them manually if needed so it isn't blocking anything."
+  },
+  {
+    "spec_id": "SPEC-0239",
+    "title": "two backup jobs failing archival step",
+    "description": "hey, the archiver errored out for two of our databases overnight, something like 'AccessDenied on archive bucket prefix'. The local snapshots are fine though and I can copy them manually, so not stuck. Could someone check the IAM role?"
+  },
+  {
+    "spec_id": "SPEC-0240",
+    "title": "some textbook pages not loading for a few of us",
+    "description": "hey, the bookstore pages for a few courses (looks like the physics intro ones) are giving a blank page for about five of us in the lab. Can't find the books anywhere else on the site, so there's nothing we can do to order them for now. Do you know what's going on?"
+  },
+  {
+    "spec_id": "SPEC-0241",
+    "title": "ALERT event-calendar feed 404 for account mhernandez",
+    "description": "event-calendar: ICS feed URL for single account mhernandez returns 404, token appears revoked. No alternative feed link available."
+  },
+  {
+    "spec_id": "SPEC-0242",
+    "title": "Avatar thumbnails rendering blurry for 4 accounts",
+    "description": "Avatar thumbnailer outputting 16x16 instead of 128x128 for 4 student accounts (resize job exit code 3). Original photos intact; users can re-upload as a workaround."
+  },
+  {
+    "spec_id": "SPEC-0243",
+    "title": "Helpdesk ticket confirmation missing",
+    "description": "Hello, I submitted a ticket yesterday through the helpdesk page but never got a confirmation email, and I can't find it in my tickets list. I think it may have been created though, since a technician called me about something related. Maybe it's just me? Thanks."
+  },
+  {
+    "spec_id": "SPEC-0244",
+    "title": "Reports won't generate",
+    "description": "Hi, several of us in the admin office have tried to export the monthly enrollment report as PDF and CSV since Tuesday and it just sits at 'Processing' forever. We have no other way to get this data."
+  },
+  {
+    "spec_id": "SPEC-0245",
+    "title": "ALERT search cluster red, queries failing",
+    "description": "search: Elasticsearch cluster status RED, 3 primary shards unassigned, query error rate 42% across syllabus, library and forum indices. No fallback."
+  },
+  {
+    "spec_id": "SPEC-0246",
+    "title": "Write failures and lost commits on shard 2, few tenants",
+    "description": "Primary cluster logged 'ERROR: could not extend file base/16384/22871: No space left on device' at 06:41, and a handful of tenants had writes acked then lost after failover (about 230 transactions missing from WAL replay). Most tenants are unaffected. Affected tenants cannot write at all and no alternative path exists."
+  },
+  {
+    "spec_id": "SPEC-0247",
+    "title": "site loading with broken styling for everyone",
+    "description": "hi, since around 8 AM the whole site is loading without proper styling, with unstyled text and missing icons. Looks like the CSS from the CDN edge is returning 503 for every request I see in devtools. A hard refresh sometimes works, and bypassing the cache via the direct origin URL also loads fine, so it's usable but ugly."
+  },
+  {
+    "spec_id": "SPEC-0248",
+    "title": "Profile photos disappeared, but I can re-upload",
+    "description": "Hello, all of our profile pictures were reset to the default silhouette this morning, and the originals seem to be gone. Re-uploading works fine, but it would be great to know what happened. Thank you."
+  },
+  {
+    "spec_id": "SPEC-0249",
+    "title": "no push notifs on my phone at all",
+    "description": "hey, I'm not receiving any notifications on my phone from the campus app, no push, no banners, nothing, since the update on Sunday. I reinstalled the app and checked my settings and nothing changed. Others in my group still get theirs fine, so it's something with my account I guess. I have no other way of getting the alerts."
+  },
+  {
+    "spec_id": "SPEC-0250",
+    "title": "Transcript PDF not opening for a few of us",
+    "description": "Dear Registrar IT, three of us requested our official transcripts this week and the downloaded PDFs show 'The signature is invalid' when opened in Adobe. The files themselves do load and the content looks correct. We were told that requesting a paper copy through the registrar office works as an alternative. Could the signing certificate be checked please?"
+  }
+]
