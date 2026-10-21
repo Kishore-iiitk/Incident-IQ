@@ -289,6 +289,13 @@ export default function Dashboard({ onSelectIncident, onNewIncident, socket }) {
                     </span>
                   )}
 
+                  {/* Needs Review Flag */}
+                  {inc.needs_review && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold tracking-wide bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse" title="Requires human review due to component disagreement or high impact">
+                      ⚠️ NEEDS REVIEW
+                    </span>
+                  )}
+
                   {/* Source Badges */}
                   {inc.sources && inc.sources.length > 0 && (
                     <div className="flex items-center gap-1">

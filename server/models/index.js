@@ -101,11 +101,27 @@ const teamSchema = new Schema({
 // 7. Reviews
 const reviewSchema = new Schema({
   incident_id: { type: Schema.Types.ObjectId, ref: 'Incident', required: true, index: true },
-  engineer: { type: String, required: true },
-  changes: { type: Schema.Types.Mixed, default: {} },
-  decision: { type: String, required: true },
-  created_at: { type: Date, default: Date.now }
+  field: { type: String, required: true },
+  old_value: { type: Schema.Types.Mixed, default: null },
+  new_value: { type: Schema.Types.Mixed, default: null },
+  action: { type: String, enum: ['approve', 'edit'], required: true },
+  reviewer: { type: String, default: 'engineer' },
+  timestamp: { type: Date, default: Date.now }
 });
+
+// 8. Confirmed Incidents (Learning Loop)
+const confirmedIncidentSchema = new Schema({
+  id: { type: String, required: true, unique: true, index: true },
+  title: { type: String, required: true },
+  symptoms: { type: String, default: '' },
+  root_cause: { type: String, required: true },
+  resolution: { type: String, required: true },
+  embedding: [{ type: Number }],
+  confirmed: { type: Boolean, default: true },
+  source: { type: String, default: 'resolved' },
+  pending_embedding: { type: Boolean, default: false },
+  created_at: { type: Date, default: Date.now }
+}, { collection: 'confirmed_incidents' });
 
 export const Incident = mongoosePkg.models.Incident || model('Incident', incidentSchema);
 export const Artifact = mongoosePkg.models.Artifact || model('Artifact', artifactSchema);
@@ -114,6 +130,7 @@ export const Analysis = mongoosePkg.models.Analysis || model('Analysis', analysi
 export const KnowledgeBase = mongoosePkg.models.KnowledgeBase || model('KnowledgeBase', knowledgeBaseSchema);
 export const Team = mongoosePkg.models.Team || model('Team', teamSchema);
 export const Review = mongoosePkg.models.Review || model('Review', reviewSchema);
+export const ConfirmedIncident = mongoosePkg.models.ConfirmedIncident || model('ConfirmedIncident', confirmedIncidentSchema);
 
 export const SEED_TEAMS = [
   {

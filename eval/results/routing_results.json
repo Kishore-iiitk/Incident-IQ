@@ -1,0 +1,165 @@
+{
+  "metadata": {
+    "total_items": 19,
+    "evaluated_count": 11,
+    "skipped_count": 8,
+    "correct_count": 3,
+    "accuracy": 0.2727,
+    "timestamp": "2026-10-21T17:14:23.110Z"
+  },
+  "results": [
+    {
+      "item_id": "scenario1",
+      "description": "Scenario 1: Database Outage",
+      "expected_team": "Backend",
+      "routed_team": "Backend",
+      "is_correct": true,
+      "status": "evaluated"
+    },
+    {
+      "item_id": "scenario2",
+      "description": "Scenario 2: Upload Service Failure",
+      "expected_team": "File Service",
+      "routed_team": "Backend",
+      "is_correct": false,
+      "status": "evaluated"
+    },
+    {
+      "item_id": "scenario3",
+      "description": "Scenario 3: Slow Login / Auth Delay",
+      "expected_team": "Auth",
+      "routed_team": "Backend",
+      "is_correct": false,
+      "status": "evaluated"
+    },
+    {
+      "item_id": "scenario4",
+      "description": "Scenario 4: Re-occurrence with Learning Loop",
+      "expected_team": "Backend",
+      "routed_team": "Backend",
+      "is_correct": true,
+      "status": "evaluated"
+    },
+    {
+      "item_id": "Q-01",
+      "description": "[ALERT] Authentication monitoring reports a sharp spike in S...",
+      "expected_team": null,
+      "routed_team": null,
+      "is_correct": false,
+      "status": "skipped"
+    },
+    {
+      "item_id": "Q-02",
+      "description": "Subject: Can't stay logged in. Every time I put in my passwo...",
+      "expected_team": "Database",
+      "routed_team": "Backend",
+      "is_correct": false,
+      "status": "evaluated"
+    },
+    {
+      "item_id": "Q-03",
+      "description": "Ticket: Following the latest software push, telemetry graphs...",
+      "expected_team": null,
+      "routed_team": null,
+      "is_correct": false,
+      "status": "skipped"
+    },
+    {
+      "item_id": "Q-04",
+      "description": "Hey team, whenever anyone tries turning in their coursework ...",
+      "expected_team": "File Service",
+      "routed_team": "Backend",
+      "is_correct": false,
+      "status": "evaluated"
+    },
+    {
+      "item_id": "Q-05",
+      "description": "[ALERT] Node-level storage telemetry indicates filesystem ca...",
+      "expected_team": "File Service",
+      "routed_team": "Backend",
+      "is_correct": false,
+      "status": "evaluated"
+    },
+    {
+      "item_id": "Q-06",
+      "description": "Hello support team, I've been trying for the last half hour ...",
+      "expected_team": null,
+      "routed_team": null,
+      "is_correct": false,
+      "status": "skipped"
+    },
+    {
+      "item_id": "Q-07",
+      "description": "Issue report: Database performance dashboards display a shar...",
+      "expected_team": "Database",
+      "routed_team": "Backend",
+      "is_correct": false,
+      "status": "evaluated"
+    },
+    {
+      "item_id": "Q-08",
+      "description": "Is anyone else noticing that course and timetable views are ...",
+      "expected_team": "Database",
+      "routed_team": "Backend",
+      "is_correct": false,
+      "status": "evaluated"
+    },
+    {
+      "item_id": "Q-09",
+      "description": "[ALERT] Performance telemetry flags excessive response times...",
+      "expected_team": null,
+      "routed_team": null,
+      "is_correct": false,
+      "status": "skipped"
+    },
+    {
+      "item_id": "Q-10",
+      "description": "Dear instructor, my professor posted the grades for our quiz...",
+      "expected_team": null,
+      "routed_team": null,
+      "is_correct": false,
+      "status": "skipped"
+    },
+    {
+      "item_id": "Q-11",
+      "description": "Defect ticket: Work uploaded close to the cutoff time is get...",
+      "expected_team": "Backend",
+      "routed_team": "Backend",
+      "is_correct": true,
+      "status": "evaluated"
+    },
+    {
+      "item_id": "Q-12",
+      "description": "Hey, notice how email alerts stopped going out to everyone? ...",
+      "expected_team": null,
+      "routed_team": null,
+      "is_correct": false,
+      "status": "skipped"
+    },
+    {
+      "item_id": "Q-13",
+      "description": "[ALERT] Messaging logs indicate that dispatch routines are s...",
+      "expected_team": null,
+      "routed_team": null,
+      "is_correct": false,
+      "status": "skipped"
+    },
+    {
+      "item_id": "Q-14",
+      "description": "Hi IT helpdesk, I am trying to watch today's recorded lectur...",
+      "expected_team": null,
+      "routed_team": null,
+      "is_correct": false,
+      "status": "skipped"
+    },
+    {
+      "item_id": "Q-15",
+      "description": "Incident report: Edge delivery monitoring registers persiste...",
+      "expected_team": "File Service",
+      "routed_team": "Backend",
+      "is_correct": false,
+      "status": "evaluated"
+    }
+  ],
+  "limitations": "15 retrieval queries map to service catalog owning teams via their expected KB incident service. Items where owning team is unknown or ambiguous are skipped."
+}

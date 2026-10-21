@@ -57,6 +57,8 @@ def load_resources():
     if os.path.exists(best_model_path):
         try:
             app.state.model = joblib.load(best_model_path)
+            if hasattr(app.state.model, "clf") and not hasattr(app.state.model.clf, "multi_class"):
+                app.state.model.clf.multi_class = "auto"
             if not app.state.model_name:
                 app.state.model_name = "best_model"
         except Exception as e:

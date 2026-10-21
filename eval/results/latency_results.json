@@ -1,0 +1,65 @@
+{
+  "metadata": {
+    "total_runs": 10,
+    "completed_count": 0,
+    "failure_count": 10,
+    "rate_limit_count": 0,
+    "median_duration_ms": 0,
+    "worst_case_duration_ms": 0,
+    "best_case_duration_ms": 0,
+    "timestamp": "2026-10-21T17:26:31.548Z"
+  },
+  "runs": [
+    {
+      "run": 1,
+      "duration_ms": 6233,
+      "status": "failed"
+    },
+    {
+      "run": 2,
+      "duration_ms": 6137,
+      "status": "failed"
+    },
+    {
+      "run": 3,
+      "duration_ms": 6112,
+      "status": "failed"
+    },
+    {
+      "run": 4,
+      "duration_ms": 6089,
+      "status": "failed"
+    },
+    {
+      "run": 5,
+      "duration_ms": 6107,
+      "status": "failed"
+    },
+    {
+      "run": 6,
+      "duration_ms": 6121,
+      "status": "failed"
+    },
+    {
+      "run": 7,
+      "duration_ms": 6136,
+      "status": "failed"
+    },
+    {
+      "run": 8,
+      "duration_ms": 6120,
+      "status": "failed"
+    },
+    {
+      "run": 9,
+      "duration_ms": 6105,
+      "status": "failed"
+    },
+    {
+      "run": 10,
+      "duration_ms": 6090,
+      "status": "failed"
+    }
+  ],
+  "limitations": "End-to-end pipeline latency over 10 consecutive executions of Scenario 1 against local server with multimodal evidence."
+}

@@ -6,10 +6,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { Incident, Artifact, Evidence, Analysis, Team } from './models/index.js';
+import { Incident, Artifact, Evidence, Analysis, Team, Review, ConfirmedIncident } from './models/index.js';
 import { pipelineQueue, emitEvent } from './pipeline.js';
 import { dedupSignal } from './services/dedup.js';
 import { redactSensitiveData } from './utils/redactor.js';
+import { invalidateConfirmedIncidentsCache } from './rag/retrieve.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -106,12 +107,14 @@ export function createApp() {
       const evidence = await Evidence.find({ incident_id: id });
       const analyses = await Analysis.find({ incident_id: id }).sort({ created_at: 1 });
       const artifacts = await Artifact.find({ incident_id: id });
+      const reviews = await Review.find({ incident_id: id }).sort({ timestamp: -1 });
 
       res.json({
         incident,
         evidence,
         analyses,
-        artifacts
+        artifacts,
+        reviews
       });
     } catch (err) {
       res.status(500).json({ error: 'Failed to fetch incident details', details: err.message });
@@ -377,6 +380,208 @@ export function createApp() {
       res.json(teams);
     } catch (err) {
       res.status(500).json({ error: 'Failed to fetch teams', details: err.message });
+    }
+  });
+
+  // POST /incidents/:id/review - save human review action (approve or edit)
+  app.post('/incidents/:id/review', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { field, action, new_value, reviewer = 'engineer' } = req.body;
+
+      if (!field || !action) {
+        return res.status(400).json({ error: 'field and action are required' });
+      }
+
+      const incident = await Incident.findById(id);
+      if (!incident) {
+        return res.status(404).json({ error: 'Incident not found' });
+      }
+
+      let oldValue = null;
+      if (field === 'severity') {
+        oldValue = incident.severity;
+        if (action === 'edit' && new_value) {
+          incident.severity = new_value;
+        }
+      } else if (field === 'assigned_team') {
+        oldValue = incident.assigned_team;
+        if (action === 'edit' && new_value) {
+          incident.assigned_team = new_value;
+        }
+      } else if (field === 'root_cause') {
+        const rcAnalysis = await Analysis.findOne({ incident_id: id, stage: 'root_cause' }).sort({ created_at: -1 });
+        oldValue = rcAnalysis?.output?.probable_root_cause || null;
+        if (action === 'edit' && new_value && rcAnalysis) {
+          rcAnalysis.output.probable_root_cause = new_value;
+          rcAnalysis.markModified('output');
+          await rcAnalysis.save();
+        }
+      }
+
+      // If approved or edited, clear needs_review flag
+      incident.needs_review = false;
+      await incident.save();
+
+      const reviewRecord = await Review.create({
+        incident_id: incident._id,
+        field,
+        old_value: oldValue,
+        new_value: action === 'approve' ? oldValue : new_value,
+        action,
+        reviewer,
+        timestamp: new Date()
+      });
+
+      emitEvent('incident:updated', incident);
+
+      res.json({
+        success: true,
+        incident,
+        review: reviewRecord
+      });
+    } catch (err) {
+      console.error('[API] Error saving review:', err.message);
+      res.status(500).json({ error: 'Failed to record review', details: err.message });
+    }
+  });
+
+  // POST /incidents/:id/resolve - mark resolved and trigger learning loop
+  app.post('/incidents/:id/resolve', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { root_cause, resolution, fix, symptoms = '' } = req.body;
+      const finalResolution = resolution || fix;
+
+      if (!root_cause || !finalResolution) {
+        return res.status(400).json({ error: 'confirmed root_cause and resolution (or fix) are required' });
+      }
+
+      const incident = await Incident.findById(id);
+      if (!incident) {
+        return res.status(404).json({ error: 'Incident not found' });
+      }
+
+      incident.status = 'resolved';
+      incident.resolved_at = new Date();
+      await incident.save();
+
+      // Learning loop: Embed {title + symptoms} through the ML service (/embed)
+      const embedText = `${incident.title} ${symptoms || incident.description || ''}`.trim();
+      const cleanEmbedText = redactSensitiveData(embedText);
+      const mlUrl = process.env.ML_SERVICE_URL || 'http://localhost:8001';
+
+      let embedding = null;
+      let pendingEmbedding = false;
+
+      try {
+        const mlRes = await fetch(`${mlUrl}/embed`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: cleanEmbedText }),
+          signal: AbortSignal.timeout(4000)
+        });
+
+        if (mlRes.ok) {
+          const payload = await mlRes.json();
+          embedding = payload.embedding || (payload.embeddings && payload.embeddings[0]);
+        } else {
+          pendingEmbedding = true;
+        }
+      } catch (embedErr) {
+        console.warn(`[LearningLoop] ML /embed unavailable: ${embedErr.message}. Saving with pending_embedding = true.`);
+        pendingEmbedding = true;
+      }
+
+      if (!Array.isArray(embedding) || embedding.length === 0) {
+        embedding = null;
+        pendingEmbedding = true;
+      }
+
+      // Store in confirmed_incidents collection
+      const confirmedId = `CONFIRMED-${incident._id.toString()}`;
+      const confirmedDoc = await ConfirmedIncident.findOneAndUpdate(
+        { id: confirmedId },
+        {
+          id: confirmedId,
+          title: incident.title,
+          symptoms: symptoms || incident.description || '',
+          root_cause,
+          resolution: finalResolution,
+          embedding,
+          confirmed: true,
+          source: 'resolved',
+          pending_embedding: pendingEmbedding,
+          created_at: new Date()
+        },
+        { upsert: true, new: true }
+      );
+
+      // Invalidate RAG cache when new confirmed entry is added
+      invalidateConfirmedIncidentsCache();
+      emitEvent('incident:updated', incident);
+
+      res.json({
+        success: true,
+        incident,
+        confirmed_incident: confirmedDoc,
+        confirmed_id: confirmedId,
+        title: incident.title,
+        pending_embedding: pendingEmbedding,
+        message: pendingEmbedding
+          ? 'Incident resolved. Note: ML embedding service was unavailable; entry saved with pending embedding.'
+          : 'Incident resolved and added to confirmed past incidents knowledge base.'
+      });
+    } catch (err) {
+      console.error('[API] Error resolving incident:', err.message);
+      res.status(500).json({ error: 'Failed to resolve incident', details: err.message });
+    }
+  });
+
+  // POST /admin/embed-pending - retry embedding for confirmed incidents with pending_embedding = true
+  app.post('/admin/embed-pending', async (req, res) => {
+    try {
+      const mlUrl = process.env.ML_SERVICE_URL || 'http://localhost:8001';
+      const pendingDocs = await ConfirmedIncident.find({
+        $or: [{ pending_embedding: true }, { embedding: null }, { embedding: { $size: 0 } }]
+      });
+
+      let updatedCount = 0;
+      for (const doc of pendingDocs) {
+        const embedText = `${doc.title} ${doc.symptoms || ''}`.trim();
+        const cleanEmbedText = redactSensitiveData(embedText);
+        try {
+          const mlRes = await fetch(`${mlUrl}/embed`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: cleanEmbedText }),
+            signal: AbortSignal.timeout(4000)
+          });
+          if (mlRes.ok) {
+            const payload = await mlRes.json();
+            const vec = payload.embedding || (payload.embeddings && payload.embeddings[0]);
+            if (Array.isArray(vec) && vec.length > 0) {
+              doc.embedding = vec;
+              doc.pending_embedding = false;
+              await doc.save();
+              updatedCount++;
+            }
+          }
+        } catch {
+          // Keep pending
+        }
+      }
+
+      if (updatedCount > 0) {
+        invalidateConfirmedIncidentsCache();
+      }
+
+      res.json({
+        total_pending_checked: pendingDocs.length,
+        successfully_embedded: updatedCount
+      });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to process pending embeddings', details: err.message });
     }
   });
 

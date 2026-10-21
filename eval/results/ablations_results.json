@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "configurations": [
+      "full",
+      "rag_off",
+      "fusion_off",
+      "text_only"
+    ],
+    "timestamp": "2026-10-21T17:19:13.527Z"
+  },
+  "metrics_by_configuration": {
+    "full": {
+      "evaluated_count": 4,
+      "routing_accuracy": 0.5,
+      "severity_match_rate": 0.75,
+      "citation_validity_rate": 1,
+      "expected_past_incident_cited_rate": 0
+    },
+    "rag_off": {
+      "evaluated_count": 4,
+      "routing_accuracy": 0.5,
+      "severity_match_rate": 0.75,
+      "citation_validity_rate": 1,
+      "expected_past_incident_cited_rate": 0
+    },
+    "fusion_off": {
+      "evaluated_count": 4,
+      "routing_accuracy": 0.5,
+      "severity_match_rate": 0.75,
+      "citation_validity_rate": 1,
+      "expected_past_incident_cited_rate": 0
+    },
+    "text_only": {
+      "evaluated_count": 4,
+      "routing_accuracy": 0.5,
+      "severity_match_rate": 0.75,
+      "citation_validity_rate": 1,
+      "expected_past_incident_cited_rate": 0
+    }
+  },
+  "limitations": "Evaluated across canonical test scenarios with controlled ablation toggles for RAG, Timeline Fusion, and Multimodal signals."
+}

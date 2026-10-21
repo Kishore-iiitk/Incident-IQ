@@ -20,6 +20,12 @@ export async function runRagRetrieval({ incidentId, contextBundle }) {
     if (contextBundle.summary && contextBundle.summary !== contextBundle.description) {
       parts.push(typeof contextBundle.summary === 'string' ? contextBundle.summary : JSON.stringify(contextBundle.summary));
     }
+    if (Array.isArray(contextBundle.top_error_templates) && contextBundle.top_error_templates.length > 0) {
+      const templateTexts = contextBundle.top_error_templates.map(t => t.template || t.sample || '').filter(Boolean);
+      if (templateTexts.length > 0) {
+        parts.push(templateTexts.slice(0, 3).join(' '));
+      }
+    }
     queryText = parts.join(' ').trim();
   }
 
@@ -39,6 +45,9 @@ export async function runRagRetrieval({ incidentId, contextBundle }) {
       root_cause: item.root_cause,
       resolution: item.resolution,
       score: item.score,
+      confirmed: Boolean(item.isConfirmed || item.confirmed),
+      isConfirmed: Boolean(item.isConfirmed || item.confirmed),
+      source: item.source || (item.isConfirmed ? 'resolved' : 'static'),
       text: `Title: ${item.title}\nService: ${item.service}\nFamily: ${item.family}\nSymptoms: ${item.symptoms}\nProbable Root Cause: ${item.root_cause}\nResolution: ${item.resolution}`
     }));
   } catch (err) {

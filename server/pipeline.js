@@ -9,6 +9,7 @@ import { processText } from './processors/text.js';
 import { validateCitations } from './fusion/timeline.js';
 import { runGeminiStage, getGeminiClient } from './agents/gemini.js';
 import { PROMPTS, PROMPT_VERSION, routerSchema, rootCauseSchema } from './agents/prompts/index.js';
+import { computeHybridSeverity } from './agents/severity.js';
 
 let ioInstance = null;
 
@@ -247,7 +248,16 @@ export async function executePipeline({ incidentId, artifactId, text, files = []
 
     // Stage 3: RAG Retrieval
     const pastIncidents = await runStage('rag_retrieval', async () => {
-      return await runRagRetrieval({ incidentId, contextBundle });
+      const results = await runRagRetrieval({ incidentId, contextBundle });
+      await Analysis.create({
+        incident_id: incident._id,
+        stage: 'rag_retrieval',
+        output: results,
+        model: 'rag-engine',
+        prompt_version: PROMPT_VERSION,
+        latency_ms: 1
+      });
+      return results;
     });
 
     // Augment contextBundle with retrieved past incidents (including their KB ids for citation)
@@ -264,7 +274,7 @@ export async function executePipeline({ incidentId, artifactId, text, files = []
       }));
     }
 
-    // Stage 4: Triage Agent
+    // Stage 4: Triage Agent & Hybrid Severity
     const triageResult = await runStage('triage', async () => {
       const prompt = PROMPTS.triage.buildUserPrompt({
         contextBundle,
@@ -277,13 +287,38 @@ export async function executePipeline({ incidentId, artifactId, text, files = []
         incidentId: incident._id
       });
 
-      // Update incident with triage findings
-      incident.severity = output.severity;
+      // Compute Hybrid Severity combining (a) rules, (b) ML classify, (c) LLM triage
+      let hybrid = null;
+      try {
+        hybrid = await computeHybridSeverity({
+          title: incident.title,
+          description: incident.description,
+          serviceName: contextBundle?.service || (output.affected_systems && output.affected_systems[0]),
+          contextBundle,
+          triageSeverity: output.severity
+        });
+      } catch (sevErr) {
+        console.warn(`[Pipeline] Hybrid severity computation failed for incident ${incident._id}:`, sevErr.message);
+      }
+
+      // Update incident with triage findings and hybrid assessment
+      incident.severity = hybrid?.severity || output.severity;
       incident.affected_systems = output.affected_systems;
-      incident.confidence = output.confidence;
+      incident.confidence = hybrid?.confidence !== undefined ? hybrid.confidence : output.confidence;
+      if (hybrid?.needs_review !== undefined) {
+        incident.needs_review = hybrid.needs_review;
+      }
       await incident.save();
 
-      return output;
+      // Return unified triage output including hybrid components and degraded state
+      return {
+        ...output,
+        hybrid_severity: hybrid?.severity || output.severity,
+        hybrid_confidence: hybrid?.confidence,
+        needs_review: hybrid?.needs_review,
+        components: hybrid?.components || null,
+        degraded: hybrid?.degraded || []
+      };
     });
 
     // Stage 5: Root Cause Agent (Uses GEMINI_MODEL_STRONG)

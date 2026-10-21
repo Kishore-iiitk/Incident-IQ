@@ -14,7 +14,9 @@
     "fault:upload-error": "node scripts/fault.js upload-error",
     "fault:slow-login": "node scripts/fault.js slow-login",
     "fault:reset": "node scripts/fault.js reset",
-    "scenario": "node scripts/run_scenario.js"
+    "scenario": "node scripts/run_scenario.js",
+    "scenario4": "node eval/scenario4.js",
+    "eval:all": "node eval/run_all.js"
   },
   "dependencies": {
     "concurrently": "^10.0.6",

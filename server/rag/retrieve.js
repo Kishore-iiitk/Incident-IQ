@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { redactSensitiveData } from '../utils/redactor.js';
+import { ConfirmedIncident } from '../models/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,8 +29,61 @@ export function cosineSimilarity(vecA, vecB) {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+let confirmedIncidentsCache = null;
+let lastCacheRefresh = 0;
+
 /**
- * Retrieve top k matching incidents from the knowledge base index.
+ * Invalidate the in-memory confirmed incidents cache.
+ */
+export function invalidateConfirmedIncidentsCache() {
+  confirmedIncidentsCache = null;
+  lastCacheRefresh = 0;
+}
+
+/**
+ * Fetch and cache confirmed incidents from MongoDB.
+ */
+async function getCachedConfirmedIncidents() {
+  // If cache is valid, return it
+  if (confirmedIncidentsCache !== null) {
+    return confirmedIncidentsCache;
+  }
+
+  try {
+    if (!ConfirmedIncident || typeof ConfirmedIncident.find !== 'function') {
+      return [];
+    }
+    // Only retrieve entries with valid non-null embeddings (pending_embedding: false / embedding length > 0)
+    const docs = await ConfirmedIncident.find({
+      confirmed: true,
+      pending_embedding: { $ne: true },
+      embedding: { $exists: true, $ne: null }
+    }).lean();
+
+    confirmedIncidentsCache = docs
+      .filter(d => Array.isArray(d.embedding) && d.embedding.length > 0)
+      .map(d => ({
+        id: d.id,
+        family: d.family || 'confirmed_past_incident',
+        service: d.service || 'confirmed',
+        title: d.title,
+        symptoms: d.symptoms || '',
+        root_cause: d.root_cause,
+        resolution: d.resolution,
+        embedding: d.embedding,
+        isConfirmed: true,
+        source: 'resolved'
+      }));
+    lastCacheRefresh = Date.now();
+    return confirmedIncidentsCache;
+  } catch (err) {
+    // If DB is not connected or error occurs in standalone scripts, return empty
+    return [];
+  }
+}
+
+/**
+ * Retrieve top k matching incidents from the knowledge base index and confirmed incidents.
  *
  * @param {string} queryText - Incident query text to match.
  * @param {object} options
@@ -38,16 +92,16 @@ export function cosineSimilarity(vecA, vecB) {
  * @param {string} [options.backend] - 'local' (default) or 'atlas'.
  * @param {string} [options.indexPath] - Custom path to kb_index.json.
  * @param {number} [options.minScore] - Minimum similarity score threshold (default: env RAG_MIN_SCORE or 0.41).
- * @returns {Promise<Array<{id: string, family: string, service: string, title: string, symptoms: string, root_cause: string, resolution: string, score: number}>>}
+ * @param {number} [options.confirmedBoost] - Ranking boost for confirmed incidents (default: env RAG_CONFIRMED_BOOST or 0.10).
+ * @returns {Promise<Array<{id: string, family: string, service: string, title: string, symptoms: string, root_cause: string, resolution: string, score: number, isConfirmed?: boolean}>>}
  */
-export async function retrieve(queryText, { k = 3, embedFn, backend, indexPath, minScore } = {}) {
+export async function retrieve(queryText, { k = 3, embedFn, backend, indexPath, minScore, confirmedBoost } = {}) {
   const activeBackend = backend || process.env.RAG_BACKEND || 'local';
 
   if (activeBackend === 'atlas') {
     if (!process.env.MONGODB_ATLAS_URI) {
       throw new Error('atlas backend not configured');
     }
-    // MONGODB_ATLAS_URI is set, but Atlas vector search collection is not verified
     throw new Error('atlas backend not configured');
   }
 
@@ -73,10 +127,19 @@ export async function retrieve(queryText, { k = 3, embedFn, backend, indexPath, 
     throw new Error(`KB index unavailable: failed to parse JSON at ${resolvedIndexPath}: ${err.message}`);
   }
 
-  const incidents = indexData.incidents || (Array.isArray(indexData) ? indexData : null);
-  if (!incidents || !Array.isArray(incidents) || incidents.length === 0) {
+  const staticIncidents = indexData.incidents || (Array.isArray(indexData) ? indexData : null);
+  if (!staticIncidents || !Array.isArray(staticIncidents) || staticIncidents.length === 0) {
     throw new Error(`KB index unavailable: no incidents found in index at ${resolvedIndexPath}`);
   }
+
+  // Fetch confirmed incidents
+  const confirmedList = await getCachedConfirmedIncidents();
+
+  // Combine both sets
+  const allCandidates = [
+    ...staticIncidents.map(i => ({ ...i, isConfirmed: false })),
+    ...confirmedList
+  ];
 
   // 2. Redact sensitive data before embedding
   const cleanQuery = redactSensitiveData(queryText);
@@ -116,8 +179,20 @@ export async function retrieve(queryText, { k = 3, embedFn, backend, indexPath, 
   }
 
   // 4. Compute cosine similarity against each incident
-  const scored = incidents.map(item => {
-    const score = cosineSimilarity(queryEmbedding, item.embedding);
+  const boostVal = confirmedBoost !== undefined
+    ? Number(confirmedBoost)
+    : (process.env.RAG_CONFIRMED_BOOST !== undefined && process.env.RAG_CONFIRMED_BOOST !== ''
+        ? parseFloat(process.env.RAG_CONFIRMED_BOOST)
+        : 0.10);
+
+  const envMin = process.env.RAG_MIN_SCORE !== undefined && process.env.RAG_MIN_SCORE !== ''
+    ? parseFloat(process.env.RAG_MIN_SCORE)
+    : DEFAULT_RAG_MIN_SCORE;
+  const effectiveMinScore = minScore !== undefined ? Number(minScore) : envMin;
+
+  // Step 4a: Calculate raw score, filter by RAG_MIN_SCORE first
+  const scored = allCandidates.map(item => {
+    const rawScore = cosineSimilarity(queryEmbedding, item.embedding);
     return {
       id: item.id,
       family: item.family,
@@ -126,20 +201,29 @@ export async function retrieve(queryText, { k = 3, embedFn, backend, indexPath, 
       symptoms: item.symptoms,
       root_cause: item.root_cause,
       resolution: item.resolution,
-      score: Number(score.toFixed(4))
+      score: Number(rawScore.toFixed(4)),
+      isConfirmed: Boolean(item.isConfirmed)
     };
   });
 
-  const envMin = process.env.RAG_MIN_SCORE !== undefined && process.env.RAG_MIN_SCORE !== ''
-    ? parseFloat(process.env.RAG_MIN_SCORE)
-    : DEFAULT_RAG_MIN_SCORE;
-  const effectiveMinScore = minScore !== undefined ? Number(minScore) : envMin;
-
-  // Filter out results strictly below the minimum score threshold
+  // Filter out results strictly below the minimum score threshold on RAW score first
   const qualifying = isNaN(effectiveMinScore) ? scored : scored.filter(item => item.score >= effectiveMinScore);
 
-  // Sort descending by similarity score
-  qualifying.sort((a, b) => b.score - a.score);
+  // Step 4b: Apply boost to confirmed entries before taking top k
+  const boosted = qualifying.map(item => {
+    if (item.isConfirmed) {
+      const boostedScore = Number((item.score + boostVal).toFixed(4));
+      return {
+        ...item,
+        score: boostedScore,
+        raw_score: item.score
+      };
+    }
+    return item;
+  });
 
-  return qualifying.slice(0, k);
+  // Sort descending by similarity score
+  boosted.sort((a, b) => b.score - a.score);
+
+  return boosted.slice(0, k);
 }
