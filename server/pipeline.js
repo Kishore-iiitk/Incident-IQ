@@ -1,9 +1,14 @@
-import { Incident, Artifact, Team, Analysis } from './models/index.js';
+import { Incident, Artifact, Evidence, Team, Analysis } from './models/index.js';
 import { processTextReport } from './processors/textProcessor.js';
 import { runFusion } from './processors/fusion.js';
 import { runRagRetrieval } from './processors/rag.js';
-import { runGeminiStage } from './agents/gemini.js';
-import { PROMPTS, PROMPT_VERSION, routerSchema } from './agents/prompts/index.js';
+import { processLog } from './processors/log.js';
+import { processVision } from './processors/vision.js';
+import { processSpeech } from './processors/speech.js';
+import { processText } from './processors/text.js';
+import { validateCitations } from './fusion/timeline.js';
+import { runGeminiStage, getGeminiClient } from './agents/gemini.js';
+import { PROMPTS, PROMPT_VERSION, routerSchema, rootCauseSchema } from './agents/prompts/index.js';
 
 let ioInstance = null;
 
@@ -20,7 +25,7 @@ export function emitEvent(eventName, payload) {
 /**
  * Execute the end-to-end incident analysis pipeline.
  */
-export async function executePipeline({ incidentId, artifactId, text }) {
+export async function executePipeline({ incidentId, artifactId, text, files = [] }) {
   console.log(`[Pipeline] Starting execution for Incident ${incidentId}...`);
 
   const incident = await Incident.findById(incidentId);
@@ -76,20 +81,188 @@ export async function executePipeline({ incidentId, artifactId, text }) {
   };
 
   try {
-    // Stage 1: Text Processor
-    const evidenceRecord = await runStage('text_processor', async () => {
-      return await processTextReport({ incidentId, artifactId, text });
+    // Stage 1: Evidence Processors
+    const geminiClient = getGeminiClient();
+    const hasFiles = Array.isArray(files) && files.length > 0;
+    const stageName = hasFiles ? 'evidence_processors' : 'text_processor';
+
+    await runStage(stageName, async () => {
+      if (!hasFiles) {
+        // Plain text submission fallback (Phase 1-3 behavior)
+        return await processTextReport({ incidentId, artifactId, text });
+      }
+
+      // Multimodal processing: categorize files
+      const logFile = files.find(f => f.originalname?.endsWith('.log') || f.mimetype?.includes('log') || f.fieldname === 'log');
+      const imageFile = files.find(f => /\.(png|jpe?g|gif|webp|bmp)$/i.test(f.originalname || '') || f.mimetype?.startsWith('image/') || f.fieldname === 'screenshot' || f.fieldname === 'image');
+      const audioFile = files.find(f => /\.(m4a|mp3|wav|ogg|webm|flac|aac)$/i.test(f.originalname || '') || f.mimetype?.startsWith('audio/') || f.fieldname === 'voice' || f.fieldname === 'audio');
+      const emailFiles = files.filter(f => /\.(txt|eml)$/i.test(f.originalname || '') || f.fieldname?.includes('email'));
+
+      const processorPromises = [];
+      let evCounter = 1;
+
+      // 1. Log Processor
+      if (logFile) {
+        processorPromises.push(
+          processLog({ filePath: logFile.path, id: `EV-${String(evCounter++).padStart(2, '0')}`, geminiClient })
+        );
+      } else {
+        processorPromises.push(
+          Promise.resolve({
+            id: `EV-${String(evCounter++).padStart(2, '0')}`,
+            source: 'log_file',
+            type: 'log',
+            summary: 'No log file provided',
+            entities: [],
+            errors: [],
+            timestamps: [],
+            confidence: 0,
+            status: 'skipped',
+            reason: 'No log file provided'
+          })
+        );
+      }
+
+      // 2. Vision Processor
+      if (imageFile) {
+        processorPromises.push(
+          processVision({ filePath: imageFile.path, id: `EV-${String(evCounter++).padStart(2, '0')}`, geminiClient })
+        );
+      } else {
+        processorPromises.push(
+          Promise.resolve({
+            id: `EV-${String(evCounter++).padStart(2, '0')}`,
+            source: 'screenshot',
+            type: 'image',
+            summary: 'No screenshot provided',
+            entities: [],
+            errors: [],
+            timestamps: [],
+            confidence: 0,
+            status: 'skipped',
+            reason: 'No screenshot provided'
+          })
+        );
+      }
+
+      // 3. Speech Processor
+      if (audioFile) {
+        processorPromises.push(
+          processSpeech({ filePath: audioFile.path, id: `EV-${String(evCounter++).padStart(2, '0')}`, geminiClient })
+        );
+      } else {
+        processorPromises.push(
+          Promise.resolve({
+            id: `EV-${String(evCounter++).padStart(2, '0')}`,
+            source: 'voice_note',
+            type: 'audio',
+            summary: 'No voice note provided',
+            entities: [],
+            errors: [],
+            timestamps: [],
+            confidence: 0,
+            status: 'skipped',
+            reason: 'No audio note provided'
+          })
+        );
+      }
+
+      // 4. Email Complaint Files
+      for (const ef of emailFiles) {
+        processorPromises.push(
+          processText({ filePath: ef.path, id: `EV-${String(evCounter++).padStart(2, '0')}` })
+        );
+      }
+
+      // 5. User narrative text if provided alongside files
+      if (text && typeof text === 'string' && text.trim().length > 0) {
+        processorPromises.push(
+          processText({ content: text, id: `EV-${String(evCounter++).padStart(2, '0')}` })
+        );
+      }
+
+      // Run all processors in parallel with Promise.allSettled
+      const settled = await Promise.allSettled(processorPromises);
+      const evidenceRecords = [];
+
+      for (const res of settled) {
+        const record = res.status === 'fulfilled'
+          ? res.value
+          : {
+              id: `EV-${String(evCounter++).padStart(2, '0')}`,
+              source: 'processor',
+              type: 'unknown',
+              summary: `Processor failed: ${res.reason?.message || 'Unknown error'}`,
+              entities: [],
+              errors: [],
+              timestamps: [],
+              confidence: 0,
+              status: 'failed',
+              reason: res.reason?.message || 'Unknown error'
+            };
+
+        // Persist to Evidence model in MongoDB
+        await Evidence.create({
+          id: record.id,
+          incident_id: incident._id,
+          artifact_id: artifactId || null,
+          source: record.source,
+          type: record.type,
+          summary: record.summary,
+          entities: record.entities || [],
+          errors: record.errors || [],
+          timestamps: record.timestamps || [],
+          confidence: record.confidence || 0,
+          status: record.status || 'ok',
+          reason: record.reason || null,
+          metadata: {
+            templates: record.templates,
+            ocrText: record.ocrText,
+            visionResult: record.visionResult,
+            speechResult: record.speechResult,
+            sentiment: record.sentiment,
+            impact: record.impact
+          }
+        });
+
+        evidenceRecords.push(record);
+      }
+
+      return evidenceRecords;
     });
 
     // Stage 2: Fusion
     const contextBundle = await runStage('fusion', async () => {
-      return await runFusion({ incidentId });
+      const bundle = await runFusion({ incidentId });
+      await Analysis.create({
+        incident_id: incident._id,
+        stage: 'fusion',
+        output: bundle,
+        model: 'fusion-engine',
+        prompt_version: PROMPT_VERSION,
+        latency_ms: 1
+      });
+      return bundle;
     });
 
-    // Stage 3: RAG Retrieval (stub in Phase 1)
+    // Stage 3: RAG Retrieval
     const pastIncidents = await runStage('rag_retrieval', async () => {
       return await runRagRetrieval({ incidentId, contextBundle });
     });
+
+    // Augment contextBundle with retrieved past incidents (including their KB ids for citation)
+    if (contextBundle) {
+      contextBundle.retrieved_incidents = (pastIncidents || []).map(ri => ({
+        kb_id: ri.id || ri.kb_id || ri._id,
+        title: ri.title,
+        service: ri.service,
+        family: ri.family,
+        symptoms: ri.symptoms,
+        root_cause: ri.root_cause,
+        resolution: ri.resolution,
+        score: ri.score
+      }));
+    }
 
     // Stage 4: Triage Agent
     const triageResult = await runStage('triage', async () => {
@@ -127,14 +300,25 @@ export async function executePipeline({ incidentId, artifactId, text }) {
         incidentId: incident._id,
         isStrongModel: true
       });
-      return output;
+
+      // Validate citations against contextBundle and validate with Zod
+      const validatedOutput = validateCitations(output, contextBundle);
+
+      // Update persisted analysis record with the validated citations
+      await Analysis.findOneAndUpdate(
+        { incident_id: incident._id, stage: 'root_cause' },
+        { output: validatedOutput },
+        { sort: { createdAt: -1 } }
+      );
+
+      return validatedOutput;
     });
 
     // Stage 6: Router (Rule match on Teams table first, LLM fallback if no match)
     const routerResult = await runStage('router', async () => {
       const teams = await Team.find();
       const affected = triageResult.affected_systems || [];
-      const lowerText = text.toLowerCase();
+      const lowerText = (text || contextBundle.description || '').toLowerCase();
 
       let matchedTeam = null;
       let matchReason = null;

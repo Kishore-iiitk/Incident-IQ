@@ -15,12 +15,12 @@
     "confidence_rationale": "Direct reports confirm HTTP 500 status on course page navigation combined with indefinite client-side upload spinner, indicating an unhandled server-side rejection or downstream dependency failure on the assignment storage controller.",
     "supporting_evidence": [
       {
-        "evidence_id": "CURRENT_EVIDENCE_1",
-        "quote": "course page shows a 500 error and the upload button spins forever"
+        "evidence_id": "EV-01",
+        "quote": "GET /courses 500 msg=\"Client must be connected\""
       },
       {
-        "evidence_id": "CURRENT_EVIDENCE_1",
-        "quote": "Students cannot open assignment pages since 2pm"
+        "evidence_id": "PHANTOM_EV_99",
+        "quote": "Direct user observation without valid evidence id in bundle"
       }
     ],
     "contradicting_evidence": [],

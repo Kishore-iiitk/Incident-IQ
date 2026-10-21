@@ -1,16 +1,68 @@
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import multer from 'multer';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { Incident, Artifact, Evidence, Analysis, Team } from './models/index.js';
 import { pipelineQueue, emitEvent } from './pipeline.js';
 import { dedupSignal } from './services/dedup.js';
 import { redactSensitiveData } from './utils/redactor.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Configure uploads directory under server/uploads/
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Multer storage configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${path.basename(file.originalname, ext)}-${uniqueSuffix}${ext}`);
+  }
+});
+
+// Allowed file extensions
+const ALLOWED_EXTS = [
+  '.log',
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp',
+  '.m4a', '.mp3', '.wav', '.ogg', '.webm', '.flac', '.aac',
+  '.txt', '.eml'
+];
+
+const fileFilter = (req, file, cb) => {
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (ALLOWED_EXTS.includes(ext)) {
+    cb(null, true);
+  } else {
+    cb(new Error(`Rejected file type: "${ext}". Only log, image, audio, and email/text files are accepted.`));
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10 MB absolute max
+  }
+});
 
 export function createApp() {
   const app = express();
 
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
   // Dynamic real health check (never hardcoded to true)
   app.get('/health', async (req, res) => {
@@ -66,164 +118,256 @@ export function createApp() {
     }
   });
 
-  // POST /incidents - handles both user text submissions and automated collector signals
-  app.post('/incidents', async (req, res) => {
-    try {
-      const isSignal = Boolean(
-        req.body.service ||
-        (req.body.source && req.body.source !== 'user_submission')
-      );
+  // POST /incidents - handles user text submissions, multipart file uploads, and automated collector signals
+  app.post('/incidents', (req, res, next) => {
+    upload.any()(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({ error: err.message });
+      }
 
-      if (isSignal) {
-        // Automatic signal from collector (reporter, poller, log_watcher, or structured user signal)
-        const {
-          source = 'reporter',
-          service = 'demo-lms',
-          endpoint = '',
-          status,
-          latency_ms,
-          count = 1,
-          user_role,
-          user_id,
-          timestamp = new Date().toISOString()
-        } = req.body;
-
-        // Apply redactor to message and stack
-        const rawMessage = req.body.message || '';
-        const rawStack = req.body.stack || '';
-        const cleanMessage = rawMessage ? redactSensitiveData(rawMessage) : '';
-        const cleanStack = rawStack ? redactSensitiveData(rawStack) : '';
-
-        // Build short title
-        let derivedTitle = req.body.title;
-        if (!derivedTitle) {
-          const detail = cleanMessage ? cleanMessage.slice(0, 50) : (status ? `HTTP ${status}` : (latency_ms ? `${latency_ms}ms latency` : 'Anomaly'));
-          derivedTitle = `[${source.toUpperCase()}] ${service}${endpoint ? ' ' + endpoint : ''} - ${detail}`;
-        }
-        if (derivedTitle.length > 80) {
-          derivedTitle = `${derivedTitle.substring(0, 77)}...`;
+      try {
+        // Enforce per-type file size limits
+        const files = req.files || [];
+        for (const file of files) {
+          const ext = path.extname(file.originalname).toLowerCase();
+          if (ext === '.log' && file.size > 5 * 1024 * 1024) {
+            return res.status(400).json({ error: `Log file "${file.originalname}" exceeds 5 MB limit` });
+          }
+          if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'].includes(ext) && file.size > 5 * 1024 * 1024) {
+            return res.status(400).json({ error: `Image file "${file.originalname}" exceeds 5 MB limit` });
+          }
+          if (['.m4a', '.mp3', '.wav', '.ogg', '.webm', '.flac', '.aac'].includes(ext) && file.size > 10 * 1024 * 1024) {
+            return res.status(400).json({ error: `Audio file "${file.originalname}" exceeds 10 MB limit` });
+          }
         }
 
-        // Build short description for the pipeline
-        const descriptionParts = [
-          `Automatic signal detected from ${source} for service "${service}".`,
-          endpoint ? `Endpoint: ${endpoint}` : null,
-          status ? `HTTP Status: ${status}` : null,
-          latency_ms ? `Response Latency: ${latency_ms}ms` : null,
-          user_role ? `User Role: ${user_role}` : null,
-          cleanMessage ? `Message: ${cleanMessage}` : null,
-          cleanStack ? `Stack Trace:\n${cleanStack}` : null
-        ].filter(Boolean);
-        const derivedDescription = descriptionParts.join('\n');
-
-        const signalObj = {
-          source,
-          service,
-          endpoint,
-          message: cleanMessage,
-          stack: cleanStack,
-          status,
-          latency_ms,
-          count,
-          user_role,
-          user_id,
-          timestamp
-        };
-
-        const { incident, artifact, isNew, fingerprint } = await dedupSignal(
-          signalObj,
-          derivedTitle,
-          derivedDescription
+        const isSignal = files.length === 0 && Boolean(
+          req.body.service ||
+          (req.body.source && req.body.source !== 'user_submission')
         );
 
-        if (isNew) {
-          // Emit socket event for new incident
+        if (isSignal) {
+          // Automatic signal from collector (reporter, poller, log_watcher, or structured user signal)
+          const {
+            source = 'reporter',
+            service = 'demo-lms',
+            endpoint = '',
+            status,
+            latency_ms,
+            count = 1,
+            user_role,
+            user_id,
+            timestamp = new Date().toISOString()
+          } = req.body;
+
+          // Apply redactor to message and stack
+          const rawMessage = req.body.message || '';
+          const rawStack = req.body.stack || '';
+          const cleanMessage = rawMessage ? redactSensitiveData(rawMessage) : '';
+          const cleanStack = rawStack ? redactSensitiveData(rawStack) : '';
+
+          // Build short title
+          let derivedTitle = req.body.title;
+          if (!derivedTitle) {
+            const detail = cleanMessage ? cleanMessage.slice(0, 50) : (status ? `HTTP ${status}` : (latency_ms ? `${latency_ms}ms latency` : 'Anomaly'));
+            derivedTitle = `[${source.toUpperCase()}] ${service}${endpoint ? ' ' + endpoint : ''} - ${detail}`;
+          }
+          if (derivedTitle.length > 80) {
+            derivedTitle = `${derivedTitle.substring(0, 77)}...`;
+          }
+
+          // Build short description for the pipeline
+          const descriptionParts = [
+            `Automatic signal detected from ${source} for service "${service}".`,
+            endpoint ? `Endpoint: ${endpoint}` : null,
+            status ? `HTTP Status: ${status}` : null,
+            latency_ms ? `Response Latency: ${latency_ms}ms` : null,
+            user_role ? `User Role: ${user_role}` : null,
+            cleanMessage ? `Message: ${cleanMessage}` : null,
+            cleanStack ? `Stack Trace:\n${cleanStack}` : null
+          ].filter(Boolean);
+          const derivedDescription = descriptionParts.join('\n');
+
+          const signalObj = {
+            source,
+            service,
+            endpoint,
+            message: cleanMessage,
+            stack: cleanStack,
+            status,
+            latency_ms,
+            count,
+            user_role,
+            user_id,
+            timestamp
+          };
+
+          const { incident, artifact, isNew, fingerprint } = await dedupSignal(
+            signalObj,
+            derivedTitle,
+            derivedDescription
+          );
+
+          if (isNew) {
+            emitEvent('incident:created', incident);
+
+            pipelineQueue.enqueue({
+              incidentId: incident._id,
+              artifactId: artifact._id,
+              text: derivedDescription
+            });
+
+            return res.status(202).json({
+              id: incident._id.toString(),
+              status: incident.status,
+              fingerprint,
+              is_new: true,
+              sources: incident.sources,
+              message: 'Incident recorded and queued for analysis'
+            });
+          } else {
+            emitEvent('incident:updated', incident);
+
+            return res.status(200).json({
+              id: incident._id.toString(),
+              status: incident.status,
+              fingerprint,
+              is_new: false,
+              sources: incident.sources,
+              affected_users: incident.affected_users,
+              message: 'Signal deduplicated and attached to existing incident'
+            });
+          }
+        }
+
+        // Multimodal files path
+        if (files.length > 0) {
+          const rawText = req.body.text || '';
+          const cleanText = rawText ? redactSensitiveData(rawText.trim()) : '';
+          const fileNames = files.map(f => f.originalname).join(', ');
+          const derivedTitle = req.body.title && req.body.title.trim().length > 0
+            ? req.body.title.trim()
+            : cleanText
+              ? (cleanText.length > 70 ? `${cleanText.substring(0, 67)}...` : cleanText)
+              : `Multimodal Incident Ingestion: ${files.length} file(s) (${fileNames.slice(0, 50)})`;
+
+          const description = cleanText || `Multimodal evidence submitted: ${fileNames}`;
+
+          // Create incident record
+          const incident = await Incident.create({
+            title: derivedTitle,
+            description,
+            status: 'processing',
+            sources: ['user_submission', 'multimodal_evidence'],
+            affected_users: 1,
+            needs_review: true,
+            created_at: new Date(),
+            last_seen: new Date()
+          });
+
+          // Create artifacts for uploaded files
+          const createdArtifacts = [];
+          for (const file of files) {
+            const ext = path.extname(file.originalname).toLowerCase();
+            let kind = 'report';
+            if (ext === '.log') kind = 'log';
+            else if (['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'].includes(ext)) kind = 'screenshot';
+            else if (['.m4a', '.mp3', '.wav', '.ogg', '.webm', '.flac', '.aac'].includes(ext)) kind = 'voice';
+            else if (['.txt', '.eml'].includes(ext)) kind = 'email';
+
+            const art = await Artifact.create({
+              incident_id: incident._id,
+              kind,
+              file_ref: file.path,
+              source: 'user_submission',
+              received_at: new Date(),
+              metadata: {
+                originalname: file.originalname,
+                size: file.size,
+                mimetype: file.mimetype
+              }
+            });
+            createdArtifacts.push(art);
+          }
+
+          if (cleanText) {
+            await Artifact.create({
+              incident_id: incident._id,
+              kind: 'text',
+              source: 'user_submission',
+              received_at: new Date()
+            });
+          }
+
           emitEvent('incident:created', incident);
 
-          // Enqueue pipeline job on the in-process async queue
+          res.status(202).json({
+            id: incident._id.toString(),
+            status: incident.status,
+            message: 'Incident recorded and queued for analysis',
+            files_received: files.length
+          });
+
           pipelineQueue.enqueue({
             incidentId: incident._id,
-            artifactId: artifact._id,
-            text: derivedDescription
+            artifactId: createdArtifacts[0]?._id || null,
+            text: cleanText,
+            files
           });
 
-          return res.status(202).json({
-            id: incident._id.toString(),
-            status: incident.status,
-            fingerprint,
-            is_new: true,
-            sources: incident.sources,
-            message: 'Incident recorded and queued for analysis'
-          });
-        } else {
-          // Emitted event for updated incident
-          emitEvent('incident:updated', incident);
-
-          return res.status(200).json({
-            id: incident._id.toString(),
-            status: incident.status,
-            fingerprint,
-            is_new: false,
-            sources: incident.sources,
-            affected_users: incident.affected_users,
-            message: 'Signal deduplicated and attached to existing incident'
-          });
+          return;
         }
+
+        // Text-only submission path
+        const { text, title, source = 'user_submission' } = req.body;
+
+        if (!text || typeof text !== 'string' || text.trim().length === 0) {
+          return res.status(400).json({ error: 'Incident text description is required' });
+        }
+
+        const cleanText = redactSensitiveData(text.trim());
+        const derivedTitle = title && title.trim().length > 0
+          ? title.trim()
+          : cleanText.length > 70
+            ? `${cleanText.substring(0, 67)}...`
+            : cleanText;
+
+        const incident = await Incident.create({
+          title: derivedTitle,
+          description: cleanText,
+          status: 'processing',
+          sources: [source],
+          affected_users: 1,
+          needs_review: true,
+          created_at: new Date(),
+          last_seen: new Date()
+        });
+
+        const artifact = await Artifact.create({
+          incident_id: incident._id,
+          kind: 'text',
+          source,
+          received_at: new Date()
+        });
+
+        emitEvent('incident:created', incident);
+
+        res.status(202).json({
+          id: incident._id.toString(),
+          status: incident.status,
+          message: 'Incident recorded and queued for analysis'
+        });
+
+        pipelineQueue.enqueue({
+          incidentId: incident._id,
+          artifactId: artifact._id,
+          text: cleanText
+        });
+      } catch (err) {
+        console.error('[API] Error creating incident:', err.message);
+        res.status(500).json({ error: 'Failed to create incident', details: err.message });
       }
-
-      // Existing user-text path
-      const { text, title, source = 'user_submission' } = req.body;
-
-      if (!text || typeof text !== 'string' || text.trim().length === 0) {
-        return res.status(400).json({ error: 'Incident text description is required' });
-      }
-
-      const cleanText = redactSensitiveData(text.trim());
-      const derivedTitle = title && title.trim().length > 0
-        ? title.trim()
-        : cleanText.length > 70
-          ? `${cleanText.substring(0, 67)}...`
-          : cleanText;
-
-      // 1. Create incident record in 'processing' status
-      const incident = await Incident.create({
-        title: derivedTitle,
-        description: cleanText,
-        status: 'processing',
-        sources: [source],
-        affected_users: 1,
-        needs_review: true,
-        created_at: new Date(),
-        last_seen: new Date()
-      });
-
-      // 2. Create artifact record for raw text submission
-      const artifact = await Artifact.create({
-        incident_id: incident._id,
-        kind: 'text',
-        source,
-        received_at: new Date()
-      });
-
-      emitEvent('incident:created', incident);
-
-      // 3. Return ID immediately (non-blocking)
-      res.status(202).json({
-        id: incident._id.toString(),
-        status: incident.status,
-        message: 'Incident recorded and queued for analysis'
-      });
-
-      // 4. Enqueue pipeline job on the in-process async queue
-      pipelineQueue.enqueue({
-        incidentId: incident._id,
-        artifactId: artifact._id,
-        text: cleanText
-      });
-    } catch (err) {
-      console.error('[API] Error creating incident:', err.message);
-      res.status(500).json({ error: 'Failed to create incident', details: err.message });
-    }
+    });
   });
 
   // GET /teams - list seeded teams

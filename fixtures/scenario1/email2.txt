@@ -1,0 +1,14 @@
+From: prof.marcus.chen@university.edu
+To: support@incidentiq.local
+Date: Wed, 21 Oct 2026 14:20:00 +0000
+Subject: LMS database errors across all student portals
+
+Hello Incident Response Team,
+
+Multiple students are reaching out to me reporting that the LMS assignment portal is completely down. When students navigate to /courses or try to submit coursework on /upload, they receive HTTP 500 Internal Server Error. The system appears to have lost its database connection ("Client must be connected before running operations").
+
+Could you please investigate the MongoDB database cluster and course-service backend urgently?
+
+Best regards,
+Prof. Marcus Chen
+Department of Computer Science

@@ -1,0 +1,14 @@
+From: sarah.connor@university.edu
+To: support@incidentiq.local
+Date: Wed, 21 Oct 2026 14:15:00 +0000
+Subject: Cannot open course pages or submit assignments!
+
+Hi Support Team,
+
+I've been trying to view the CS-101 course catalog and submit my assignment since 2pm, but every time I click on /courses or attempt to upload my assignment solution, the page throws a 500 server error and says "Client must be connected". All students in our group are completely blocked and unable to submit before today's 5pm deadline! This is urgent!
+
+Thanks,
+Sarah Connor
+Student ID: 948271
+--
+Sent from my University Mail client

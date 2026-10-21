@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { redactSensitiveData } from '../utils/redactor.js';
 import { Analysis } from '../models/index.js';
 import { PROMPT_VERSION, STAGE_SCHEMAS } from './prompts/index.js';
+import { wrapGeminiClient, sharedLimiter, isRateLimitError, isDailyQuotaExhausted } from '../utils/geminiLimiter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -58,8 +59,8 @@ export async function runGeminiStage({
   mockClient = null // for testing retry & validation mechanics
 }) {
   const startTime = Date.now();
-  const fastModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-  const strongModel = process.env.GEMINI_MODEL_STRONG || 'gemini-2.5-pro';
+  const fastModel = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
+  const strongModel = process.env.GEMINI_MODEL_STRONG || 'gemini-3.1-pro-preview';
   const modelName = isStrongModel ? strongModel : fastModel;
 
   // 1. Redact input before sending to external API
@@ -112,12 +113,13 @@ export async function runGeminiStage({
       );
     }
 
-    const client = mockClient || new GoogleGenAI({ apiKey });
+    const rawClient = mockClient || new GoogleGenAI({ apiKey });
+    const client = wrapGeminiClient(rawClient);
 
     // Function to perform generation call
     const callModel = async (prompt) => {
       if (mockClient && mockClient.models && mockClient.models.generateContent) {
-        return await mockClient.models.generateContent({
+        return await client.models.generateContent({
           model: modelName,
           contents: prompt,
           config: {
@@ -154,6 +156,26 @@ export async function runGeminiStage({
         validatedOutput = parsedJSON;
       }
     } catch (firstAttemptErr) {
+      if (isRateLimitError(firstAttemptErr) || isDailyQuotaExhausted(firstAttemptErr)) {
+        const latencyMs = Date.now() - startTime;
+        console.error(`[GeminiAgent] Stage "${stage}" failed due to rate limit/quota exhaustion: ${firstAttemptErr.message}. Skipping outer agent retry.`);
+        if (incidentId) {
+          try {
+            await Analysis.create({
+              incident_id: incidentId,
+              stage,
+              output: { error: firstAttemptErr.message, raw: rawOutputText },
+              model: modelName,
+              prompt_version: PROMPT_VERSION,
+              latency_ms: latencyMs
+            });
+          } catch (dbErr) {
+            console.error('[GeminiAgent] Failed to save error analysis record:', dbErr.message);
+          }
+        }
+        throw firstAttemptErr;
+      }
+
       console.warn(`[GeminiAgent] Stage "${stage}" attempt 1 failed: ${firstAttemptErr.message}. Retrying once with error feedback...`);
 
       // Attempt 2 (Retry once with validation error feedback)
@@ -229,4 +251,10 @@ CRITICAL REQUIREMENT: Return ONLY strictly valid JSON adhering exactly to the sp
     promptVersion: PROMPT_VERSION,
     isDemoMode: isFromDemoCache
   };
+}
+
+export function getGeminiClient() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+  return wrapGeminiClient(new GoogleGenAI({ apiKey }));
 }

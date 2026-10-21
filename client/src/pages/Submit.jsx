@@ -1,18 +1,77 @@
 import React, { useState } from 'react';
-import { Send, Sparkles, AlertCircle, FileText, ArrowRight, ShieldAlert } from 'lucide-react';
+import { Send, Sparkles, AlertCircle, FileText, ArrowRight, ShieldAlert, Upload, FileCode, Image, Mic, Mail, X } from 'lucide-react';
 
 const SAMPLE_INCIDENT_TEXT = "Students cannot open assignment pages since 2pm, the course page shows a 500 error and the upload button spins forever.";
 
 export default function Submit({ onIncidentCreated }) {
   const [text, setText] = useState('');
   const [title, setTitle] = useState('');
+  const [files, setFiles] = useState({
+    log: null,
+    image: null,
+    audio: null,
+    emails: []
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const handleFileChange = (type, e) => {
+    const selected = e.target.files;
+    if (!selected || selected.length === 0) return;
+
+    if (type === 'log') {
+      const file = selected[0];
+      if (file.size > 5 * 1024 * 1024) {
+        setError(`Log file "${file.name}" exceeds 5 MB limit`);
+        return;
+      }
+      setFiles(prev => ({ ...prev, log: file }));
+      setError(null);
+    } else if (type === 'image') {
+      const file = selected[0];
+      if (file.size > 5 * 1024 * 1024) {
+        setError(`Screenshot "${file.name}" exceeds 5 MB limit`);
+        return;
+      }
+      setFiles(prev => ({ ...prev, image: file }));
+      setError(null);
+    } else if (type === 'audio') {
+      const file = selected[0];
+      if (file.size > 10 * 1024 * 1024) {
+        setError(`Audio note "${file.name}" exceeds 10 MB limit`);
+        return;
+      }
+      setFiles(prev => ({ ...prev, audio: file }));
+      setError(null);
+    } else if (type === 'emails') {
+      const newEmails = Array.from(selected);
+      for (const ef of newEmails) {
+        if (ef.size > 5 * 1024 * 1024) {
+          setError(`Email file "${ef.name}" exceeds 5 MB limit`);
+          return;
+        }
+      }
+      setFiles(prev => ({ ...prev, emails: [...prev.emails, ...newEmails] }));
+      setError(null);
+    }
+  };
+
+  const removeFile = (type, index = null) => {
+    if (type === 'emails' && index !== null) {
+      setFiles(prev => ({
+        ...prev,
+        emails: prev.emails.filter((_, i) => i !== index)
+      }));
+    } else {
+      setFiles(prev => ({ ...prev, [type]: null }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (!text.trim()) {
-      setError('Please provide an incident description or paste crash details.');
+    const hasFiles = files.log || files.image || files.audio || files.emails.length > 0;
+    if (!text.trim() && !hasFiles) {
+      setError('Please provide an incident description or attach evidence files (log, image, audio, or email).');
       return;
     }
 
@@ -20,15 +79,38 @@ export default function Submit({ onIncidentCreated }) {
     setError(null);
 
     try {
-      const response = await fetch('/incidents', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: text.trim(),
-          title: title.trim() || undefined,
-          source: 'user_submission'
-        })
-      });
+      let response;
+
+      if (hasFiles) {
+        // Send multipart form-data
+        const formData = new FormData();
+        if (text.trim()) formData.append('text', text.trim());
+        if (title.trim()) formData.append('title', title.trim());
+        formData.append('source', 'user_submission');
+
+        if (files.log) formData.append('log', files.log);
+        if (files.image) formData.append('screenshot', files.image);
+        if (files.audio) formData.append('voice', files.audio);
+        for (const ef of files.emails) {
+          formData.append('email', ef);
+        }
+
+        response = await fetch('/incidents', {
+          method: 'POST',
+          body: formData
+        });
+      } else {
+        // Text-only JSON submission
+        response = await fetch('/incidents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: text.trim(),
+            title: title.trim() || undefined,
+            source: 'user_submission'
+          })
+        });
+      }
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
@@ -36,7 +118,6 @@ export default function Submit({ onIncidentCreated }) {
       }
 
       const result = await response.json();
-      // Instantly navigate to detail page to watch live pipeline progress
       onIncidentCreated(result.id);
     } catch (err) {
       console.error('Submission failed:', err);
@@ -56,13 +137,13 @@ export default function Submit({ onIncidentCreated }) {
       <div className="mb-8">
         <div className="flex items-center gap-2 text-indigo-400 text-xs font-mono font-semibold uppercase tracking-wider mb-2">
           <ShieldAlert className="w-4 h-4" />
-          <span>Incident Ingestion Portal</span>
+          <span>Multimodal Incident Ingestion Portal</span>
         </div>
         <h1 className="text-3xl font-extrabold text-white tracking-tight">
           Report System Outage or Anomaly
         </h1>
         <p className="text-slate-400 mt-2 text-sm max-w-2xl">
-          Submit free-form outage notices, error messages, user tickets, or terminal logs. IncidentIQ will automatically parse evidence, evaluate blast radius, deduce root causes, route to on-call teams, and author a structured bug report.
+          Submit free-form outage notices or attach multimodal evidence (server logs, error screenshots, audio voice notes, user complaint emails). IncidentIQ automatically parses evidence, extracts templates, fuses timelines, and authors structured bug reports.
         </p>
       </div>
 
@@ -114,20 +195,151 @@ export default function Submit({ onIncidentCreated }) {
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-slate-300">
-              Raw Incident Narrative or Logs <span className="text-rose-400">*</span>
+              Raw Incident Narrative or Logs <span className="text-slate-500 font-normal">(Required if no files attached)</span>
             </label>
             <span className="text-[11px] font-mono text-slate-500">
               {text.length} characters
             </span>
           </div>
           <textarea
-            rows={7}
+            rows={5}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            required
             placeholder="Describe what occurred, error messages observed, affected users, or paste log snippets..."
             className="w-full px-4 py-3 rounded-lg bg-slate-950/60 border border-slate-800 text-slate-100 placeholder-slate-600 text-sm font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-y"
           />
+        </div>
+
+        {/* Multimodal File Uploads Section */}
+        <div className="space-y-3 pt-2">
+          <label className="block text-xs font-mono font-semibold uppercase tracking-wider text-slate-300">
+            Multimodal Evidence Attachments <span className="text-slate-500 font-normal">(Optional)</span>
+          </label>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            {/* Server Log Upload */}
+            <div className="p-3.5 rounded-lg bg-slate-950/50 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between">
+              <div className="flex items-center gap-2 mb-2 text-indigo-400">
+                <FileCode className="w-4 h-4" />
+                <span className="text-xs font-mono font-semibold">Server Log</span>
+              </div>
+              <p className="text-[11px] text-slate-500 mb-2">.log files (max 5 MB)</p>
+              {files.log ? (
+                <div className="flex items-center justify-between bg-indigo-950/40 border border-indigo-800/60 px-2 py-1.5 rounded text-xs text-indigo-200">
+                  <span className="truncate max-w-[120px] font-mono text-[11px]">{files.log.name}</span>
+                  <button type="button" onClick={() => removeFile('log')} className="text-slate-400 hover:text-rose-400">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <label className="cursor-pointer text-center px-2 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-mono transition-all">
+                  <span>Browse .log</span>
+                  <input
+                    type="file"
+                    accept=".log,text/plain"
+                    className="hidden"
+                    onChange={(e) => handleFileChange('log', e)}
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Screenshot Upload */}
+            <div className="p-3.5 rounded-lg bg-slate-950/50 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between">
+              <div className="flex items-center gap-2 mb-2 text-indigo-400">
+                <Image className="w-4 h-4" />
+                <span className="text-xs font-mono font-semibold">Screenshot</span>
+              </div>
+              <p className="text-[11px] text-slate-500 mb-2">.png, .jpg (max 5 MB)</p>
+              {files.image ? (
+                <div className="flex items-center justify-between bg-indigo-950/40 border border-indigo-800/60 px-2 py-1.5 rounded text-xs text-indigo-200">
+                  <span className="truncate max-w-[120px] font-mono text-[11px]">{files.image.name}</span>
+                  <button type="button" onClick={() => removeFile('image')} className="text-slate-400 hover:text-rose-400">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <label className="cursor-pointer text-center px-2 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-mono transition-all">
+                  <span>Browse Image</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleFileChange('image', e)}
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Voice Note Upload */}
+            <div className="p-3.5 rounded-lg bg-slate-950/50 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between">
+              <div className="flex items-center gap-2 mb-2 text-indigo-400">
+                <Mic className="w-4 h-4" />
+                <span className="text-xs font-mono font-semibold">Voice Note</span>
+              </div>
+              <p className="text-[11px] text-slate-500 mb-2">.m4a, .mp3, .wav (max 10 MB)</p>
+              {files.audio ? (
+                <div className="flex items-center justify-between bg-indigo-950/40 border border-indigo-800/60 px-2 py-1.5 rounded text-xs text-indigo-200">
+                  <span className="truncate max-w-[120px] font-mono text-[11px]">{files.audio.name}</span>
+                  <button type="button" onClick={() => removeFile('audio')} className="text-slate-400 hover:text-rose-400">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <label className="cursor-pointer text-center px-2 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-mono transition-all">
+                  <span>Browse Audio</span>
+                  <input
+                    type="file"
+                    accept="audio/*,.m4a"
+                    className="hidden"
+                    onChange={(e) => handleFileChange('audio', e)}
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Email Complaints Upload */}
+            <div className="p-3.5 rounded-lg bg-slate-950/50 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between">
+              <div className="flex items-center gap-2 mb-2 text-indigo-400">
+                <Mail className="w-4 h-4" />
+                <span className="text-xs font-mono font-semibold">Emails</span>
+              </div>
+              <p className="text-[11px] text-slate-500 mb-2">.txt, .eml (max 5 MB)</p>
+              {files.emails.length > 0 ? (
+                <div className="space-y-1">
+                  {files.emails.map((ef, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-indigo-950/40 border border-indigo-800/60 px-2 py-1 rounded text-xs text-indigo-200">
+                      <span className="truncate max-w-[110px] font-mono text-[10px]">{ef.name}</span>
+                      <button type="button" onClick={() => removeFile('emails', idx)} className="text-slate-400 hover:text-rose-400">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <label className="cursor-pointer block text-center text-[10px] text-indigo-400 hover:underline pt-1">
+                    <span>+ Add More</span>
+                    <input
+                      type="file"
+                      accept=".txt,.eml"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => handleFileChange('emails', e)}
+                    />
+                  </label>
+                </div>
+              ) : (
+                <label className="cursor-pointer text-center px-2 py-1.5 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-mono transition-all">
+                  <span>Browse Emails</span>
+                  <input
+                    type="file"
+                    accept=".txt,.eml"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handleFileChange('emails', e)}
+                  />
+                </label>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="pt-2 flex items-center justify-between border-t border-slate-800">

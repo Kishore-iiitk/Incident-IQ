@@ -13,7 +13,8 @@
     "fault:db-down": "node scripts/fault.js db-down",
     "fault:upload-error": "node scripts/fault.js upload-error",
     "fault:slow-login": "node scripts/fault.js slow-login",
-    "fault:reset": "node scripts/fault.js reset"
+    "fault:reset": "node scripts/fault.js reset",
+    "scenario": "node scripts/run_scenario.js"
   },
   "dependencies": {
     "concurrently": "^10.0.6",

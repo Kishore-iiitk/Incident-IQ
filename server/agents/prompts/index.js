@@ -16,8 +16,9 @@ export const rootCauseSchema = z.object({
   confidence: z.number().min(0).max(1),
   confidence_rationale: z.string(),
   supporting_evidence: z.array(z.object({
-    evidence_id: z.string(),
-    quote: z.string()
+    evidence_id: z.string().nullable().optional(),
+    quote: z.string(),
+    status: z.enum(['cited', 'uncited']).optional()
   })),
   contradicting_evidence: z.array(z.string()),
   alternative_hypotheses: z.array(z.object({
@@ -107,7 +108,7 @@ Provide the triage assessment in the required JSON format.
   root_cause: {
     system: `You are the IncidentIQ Root Cause Analysis Agent.
 Analyze the incident timeline, evidence pieces, and errors to determine the probable root cause.
-Every supporting evidence claim MUST reference a valid evidence_id and include an exact quote or verbatim snippet from that evidence.
+Every supporting evidence claim MUST reference a valid evidence_id or KB id from the provided bundle (e.g. EV-01, EV-02, or KB-001) and include an exact quote or verbatim snippet from that evidence.
 Evaluate potential alternative hypotheses and explain why they were discounted.
 Provide recommended next verification checks.
 

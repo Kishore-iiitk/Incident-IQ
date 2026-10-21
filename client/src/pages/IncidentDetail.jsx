@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft, RefreshCw, ShieldAlert, Users, CheckCircle2,
   AlertTriangle, Terminal, Sparkles, FileText, ChevronDown,
-  ChevronUp, ExternalLink, Activity, Info
+  ChevronUp, ExternalLink, Activity, Info, FileCode, Image, Mic, Mail
 } from 'lucide-react';
 import SeverityBadge from '../components/SeverityBadge.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
@@ -211,6 +211,81 @@ export default function IncidentDetail({ incidentId, onBack, socket }) {
         </p>
       </div>
 
+      {/* Multimodal Evidence Processors Status & Evidence Summary (Phase 4) */}
+      {evidence && evidence.length > 0 && (
+        <div className="glass-panel p-5 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="flex items-center gap-2">
+              <Activity className="w-4 h-4 text-indigo-400" />
+              <h2 className="text-sm font-bold text-white uppercase font-mono tracking-wide">
+                Multimodal Evidence Processors ({evidence.length})
+              </h2>
+            </div>
+            <span className="text-xs font-mono text-slate-400">
+              Parallel execution via Promise.allSettled
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {evidence.map((ev, idx) => {
+              const status = ev.status || 'ok';
+              const statusColor =
+                status === 'ok' || status === 'success'
+                  ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60'
+                  : status === 'failed'
+                    ? 'bg-rose-950/40 text-rose-300 border-rose-800/60'
+                    : 'bg-slate-800/40 text-slate-400 border-slate-700/60';
+
+              return (
+                <div key={idx} className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono font-bold text-indigo-400">
+                        {ev.id || `EV-${String(idx + 1).padStart(2, '0')}`}
+                      </span>
+                      <span className="text-xs font-mono text-slate-300 capitalize">
+                        {ev.source?.replace('_', ' ') || ev.type}
+                      </span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase border ${statusColor}`}>
+                      {status}
+                    </span>
+                  </div>
+
+                  <p className="text-xs font-mono text-slate-300 leading-relaxed">
+                    {ev.summary}
+                  </p>
+
+                  {ev.reason && (
+                    <p className="text-[11px] font-mono text-rose-400 bg-rose-950/30 p-2 rounded border border-rose-900/40">
+                      Reason: {ev.reason}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] font-mono text-slate-400">
+                    {typeof ev.confidence === 'number' && ev.confidence > 0 && (
+                      <span className="text-indigo-300">
+                        Confidence: {(ev.confidence * 100).toFixed(0)}%
+                      </span>
+                    )}
+                    {ev.errors && ev.errors.length > 0 && (
+                      <span className="text-rose-400">
+                        Errors: {ev.errors.slice(0, 2).join(', ')}
+                      </span>
+                    )}
+                    {ev.entities && ev.entities.length > 0 && (
+                      <span className="text-slate-400">
+                        Entities: {ev.entities.slice(0, 3).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Grid of Results: Triage & Router */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Triage Findings */}
@@ -364,7 +439,9 @@ export default function IncidentDetail({ incidentId, onBack, socket }) {
                       </div>
                       <div className="flex items-center justify-between text-[11px] font-mono text-indigo-400 pt-1 border-t border-slate-900">
                         <span>Evidence Ref:</span>
-                        <span className="text-slate-400">{ev.evidence_id}</span>
+                        <span className={ev.status === 'uncited' ? 'text-amber-400 font-bold' : 'text-slate-400'}>
+                          {ev.evidence_id || '(uncited claim)'}
+                        </span>
                       </div>
                     </div>
                   ))}

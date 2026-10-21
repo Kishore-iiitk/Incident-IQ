@@ -1,4 +1,3 @@
-import mongoose from 'express'; // wait, mongoose is from 'mongoose'
 import mongoosePkg from 'mongoose';
 const { Schema, model } = mongoosePkg;
 
@@ -48,6 +47,7 @@ const artifactSchema = new Schema({
 
 // 3. Evidence
 const evidenceSchema = new Schema({
+  id: { type: String, default: null, index: true },
   incident_id: { type: Schema.Types.ObjectId, ref: 'Incident', required: true, index: true },
   artifact_id: { type: Schema.Types.ObjectId, ref: 'Artifact', default: null },
   source: { type: String, required: true },
@@ -57,8 +57,10 @@ const evidenceSchema = new Schema({
   errors: [{ type: String }],
   timestamps: [{ type: String }],
   confidence: { type: Number, default: 1.0 },
-  status: { type: String, default: 'success' }
-}, { suppressReservedKeysWarning: true });
+  status: { type: String, default: 'ok' },
+  reason: { type: String, default: null },
+  metadata: { type: Schema.Types.Mixed, default: {} }
+}, { suppressReservedKeysWarning: true, strict: false });
 
 // 4. Analyses
 const analysisSchema = new Schema({
