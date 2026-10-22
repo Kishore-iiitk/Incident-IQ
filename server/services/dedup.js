@@ -1,5 +1,6 @@
 import { Incident, Artifact } from '../models/index.js';
 import { computeFingerprint, deriveErrorClass } from '../utils/fingerprint.js';
+import { pipelineQueue } from '../pipeline.js';
 
 // In-process per-fingerprint mutex to serialize concurrent signals for the same fingerprint
 const fingerprintLocks = new Map();
@@ -31,13 +32,13 @@ async function withFingerprintLock(fingerprint, action) {
  * Deduplicate and ingest a signal into the Incident database.
  *
  * Rules:
- * - If an open incident (status not in ['resolved', 'closed', 'failed']) has the same
+ * - If an open incident (status not in ['resolved', 'closed']) has the same
  *   fingerprint within a 10-minute window, attach the new artifact, add the source to sources[],
  *   and update last_seen.
+ * - When matching a FAILED incident: re-queue the pipeline automatically, limited to one retry
+ *   per 60 seconds and 3 retries per incident (then stop and leave it failed).
  * - Increment affected_users only for sources "reporter" and "user" (poller and log_watcher are synthetic).
  * - Otherwise create a new incident with the fingerprint.
- *
- * Note: Two different upload bugs within 10 minutes would merge, which is acceptable for the demo.
  */
 export async function dedupSignal(signal, title, description) {
   const fingerprint = computeFingerprint(signal);
@@ -66,6 +67,26 @@ export async function dedupSignal(signal, title, description) {
         $set: { last_seen: new Date() },
         $addToSet: { sources: source }
       };
+
+      // Handle failed incident recovery: re-queue if under limits
+      let isRetried = false;
+      if (existing.status === 'failed') {
+        const autoRetries = existing.auto_retry_count || 0;
+        const lastRetryTime = existing.last_auto_retry_at ? new Date(existing.last_auto_retry_at).getTime() : 0;
+        const cooldownPassed = (Date.now() - lastRetryTime) >= 60000;
+
+        if (autoRetries < 3 && cooldownPassed) {
+          isRetried = true;
+          updateOps.$set.status = 'processing';
+          updateOps.$set.error_message = null;
+          updateOps.$set.failed_stage = null;
+          updateOps.$set.last_auto_retry_at = new Date();
+          updateOps.$inc = {
+            auto_retry_count: 1,
+            retry_count: 1
+          };
+        }
+      }
 
       // Distinct user incrementing:
       // Must be real user source, not probe, and must have a valid user_id.
@@ -105,10 +126,19 @@ export async function dedupSignal(signal, title, description) {
         }
       });
 
+      if (isRetried) {
+        pipelineQueue.enqueue({
+          incidentId: updatedIncident._id,
+          artifactId: artifact._id,
+          text: updatedIncident.description
+        });
+      }
+
       return {
         incident: updatedIncident,
         artifact,
         isNew: false,
+        isRetried,
         fingerprint
       };
     }

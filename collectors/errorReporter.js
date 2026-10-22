@@ -88,6 +88,21 @@ export function responseStatusReporter(req, res, next) {
   next();
 }
 
+function sanitizeErrorMessage(msg) {
+  if (!msg || typeof msg !== 'string') return '';
+  return msg
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 200);
+}
+
 /**
  * Express error-handling middleware: (err, req, res, next)
  */
@@ -101,7 +116,7 @@ export function errorReporter(err, req, res, next) {
     service: 'demo-lms',
     endpoint,
     status: res.statusCode >= 500 ? res.statusCode : 500,
-    message: err?.message || String(err),
+    message: sanitizeErrorMessage(err?.message || String(err)),
     stack: err?.stack || undefined,
     user_role: userRole,
     user_id: userId,

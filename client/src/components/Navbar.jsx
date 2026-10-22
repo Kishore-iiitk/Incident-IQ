@@ -58,12 +58,18 @@ export default function Navbar({ activeTab, setActiveTab, healthInfo, isDemoMode
               </div>
             )}
 
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs">
-              <span className={`w-2 h-2 rounded-full ${healthInfo?.database === 'connected' ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
-              <span className="text-slate-400">
-                DB: <span className="text-slate-200 font-mono">{healthInfo?.database || 'connecting'}</span>
-              </span>
-            </div>
+            {(() => {
+              const isConnected = healthInfo?.database === 'connected';
+              const dbDisplay = isConnected ? 'connected' : 'disconnected';
+              return (
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs">
+                  <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
+                  <span className="text-slate-400">
+                    DB: <span className="text-slate-200 font-mono">{dbDisplay}</span>
+                  </span>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>

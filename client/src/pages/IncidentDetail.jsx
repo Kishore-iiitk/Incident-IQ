@@ -8,11 +8,13 @@ import {
 import SeverityBadge from '../components/SeverityBadge.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
 import StageProgress from '../components/StageProgress.jsx';
+import { getIncident, reviewIncident, resolveIncident, retryIncident } from '../api.js';
 
 export default function IncidentDetail({ incidentId, onBack, socket }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [retrying, setRetrying] = useState(false);
 
   // Live pipeline state tracking
   const [currentRunningStage, setCurrentRunningStage] = useState(null);
@@ -37,20 +39,22 @@ export default function IncidentDetail({ incidentId, onBack, socket }) {
   const fetchDetails = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/incidents/${incidentId}`);
-      if (!res.ok) {
-        throw new Error(`Incident not found (${res.status})`);
-      }
-      const json = await res.json();
+      const json = await getIncident(incidentId);
       setData(json);
 
-      // Hydrate completed stages from existing analyses
-      if (json.analyses && json.analyses.length > 0) {
-        const done = json.analyses.map(a => a.stage);
-        setCompletedStages(prev => Array.from(new Set([...prev, ...done])));
+      // Hydrate completed stages from existing analyses and incident doc
+      const doneFromAnalyses = (json.analyses || []).map(a => a.stage);
+      const doneFromIncident = json.incident?.stages_completed || [];
+      const combinedDone = Array.from(new Set([...doneFromAnalyses, ...doneFromIncident]));
+      if (combinedDone.length > 0) {
+        setCompletedStages(combinedDone);
       }
+
       if (json.incident?.status === 'failed') {
+        setFailedStage(json.incident.failed_stage);
         setStageErrorMessage(json.incident.error_message);
+      } else if (json.incident?.status === 'review') {
+        setFailedStage(null);
       }
     } catch (err) {
       console.error('Fetch error:', err);
@@ -118,29 +122,37 @@ export default function IncidentDetail({ incidentId, onBack, socket }) {
     };
   }, [socket, incidentId]);
 
+  // Handle Retry Analysis (Problem 3)
+  const handleRetryAnalysis = async () => {
+    try {
+      setRetrying(true);
+      await retryIncident(incidentId);
+      await fetchDetails();
+    } catch (err) {
+      console.error('Retry failed:', err);
+      alert(err.message || 'Failed to retry incident analysis');
+    } finally {
+      setRetrying(false);
+    }
+  };
+
   // Handle Review action (approve or edit)
   const handleReviewAction = async (field, action, customNewValue = null) => {
     try {
       setReviewSubmitting(true);
       const val = action === 'edit' ? (customNewValue || editValue) : null;
-      const res = await fetch(`/incidents/${incidentId}/review`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          field,
-          action,
-          new_value: val,
-          reviewer: 'oncall_engineer'
-        })
+      await reviewIncident(incidentId, {
+        field,
+        action,
+        new_value: val,
+        reviewer: 'oncall_engineer'
       });
-
-      if (res.ok) {
-        setEditingField(null);
-        setEditValue('');
-        await fetchDetails();
-      }
+      setEditingField(null);
+      setEditValue('');
+      await fetchDetails();
     } catch (err) {
       console.error('Review submit failed:', err);
+      alert(err.message || 'Failed to record review');
     } finally {
       setReviewSubmitting(false);
     }
@@ -153,27 +165,21 @@ export default function IncidentDetail({ incidentId, onBack, socket }) {
 
     try {
       setResolving(true);
-      const res = await fetch(`/incidents/${incidentId}/resolve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          root_cause: resolveRootCause,
-          resolution: resolveFix,
-          symptoms: resolveSymptoms
-        })
+      const json = await resolveIncident(incidentId, {
+        root_cause: resolveRootCause,
+        resolution: resolveFix,
+        symptoms: resolveSymptoms
       });
 
-      const json = await res.json();
-      if (res.ok) {
-        if (json.pending_embedding) {
-          setResolvePendingNotice('Resolved. Note: ML embedding service was unavailable; entry saved with pending embedding.');
-        } else {
-          setShowResolveModal(false);
-        }
-        await fetchDetails();
+      if (json && json.pending_embedding) {
+        setResolvePendingNotice('Resolved. Note: ML embedding service was unavailable; entry saved with pending embedding.');
+      } else {
+        setShowResolveModal(false);
       }
+      await fetchDetails();
     } catch (err) {
       console.error('Resolve failed:', err);
+      alert(err.message || 'Failed to resolve incident');
     } finally {
       setResolving(false);
     }
@@ -292,6 +298,18 @@ export default function IncidentDetail({ incidentId, onBack, socket }) {
             </button>
           )}
 
+          {/* Retry Analysis Button */}
+          {incident.status === 'failed' && (
+            <button
+              onClick={handleRetryAnalysis}
+              disabled={retrying}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-rose-900/30 transition-all cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${retrying ? 'animate-spin' : ''}`} />
+              <span>Retry analysis</span>
+            </button>
+          )}
+
           <button
             onClick={fetchDetails}
             className="p-2 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800 cursor-pointer"
@@ -302,11 +320,41 @@ export default function IncidentDetail({ incidentId, onBack, socket }) {
         </div>
       </div>
 
+      {/* Prominent Failed Incident Banner (Problem 3) */}
+      {incident.status === 'failed' && (
+        <div className="p-4 rounded-xl bg-rose-950/60 border border-rose-600/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-rose-200">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+            <div>
+              <div className="font-bold text-sm text-white">
+                Pipeline Execution Failed at Stage: <span className="font-mono text-rose-300 uppercase">{incident.failed_stage || failedStage || 'Unknown'}</span>
+              </div>
+              <p className="text-xs text-rose-300/90 mt-1">
+                {incident.error_message || stageErrorMessage || 'The autonomous pipeline encountered an error during processing.'}
+              </p>
+              {completedStages && completedStages.length > 0 && (
+                <div className="text-[11px] font-mono text-slate-400 mt-2">
+                  Retained completed stage results: <span className="text-emerald-400">{completedStages.join(', ')}</span>
+                </div>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={handleRetryAnalysis}
+            disabled={retrying}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-md shrink-0 cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${retrying ? 'animate-spin' : ''}`} />
+            <span>Retry analysis</span>
+          </button>
+        </div>
+      )}
+
       {/* 7-Stage Live Pipeline Stepper */}
       <StageProgress
         currentStage={currentRunningStage}
         completedStages={completedStages}
-        failedStage={failedStage}
+        failedStage={incident.failed_stage || failedStage}
         errorMessage={stageErrorMessage || incident.error_message}
         analyses={analyses}
       />

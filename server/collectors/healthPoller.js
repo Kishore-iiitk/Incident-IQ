@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { cleanHtmlText } from '../utils/htmlCleaner.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,24 +28,33 @@ function getTargets() {
 }
 
 async function sendSignal(signal, incidentIqUrl) {
-  try {
-    const targetUrl = incidentIqUrl || process.env.INCIDENTIQ_URL || 'http://localhost:5000/incidents';
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+  const targetUrl = incidentIqUrl || process.env.INCIDENTIQ_URL || 'http://localhost:5000/incidents';
+  const MAX_ATTEMPTS = 2; // 1 initial attempt + 1 retry
 
-    const res = await fetch(targetUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(signal),
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-    if (!res.ok) {
-      console.warn(`[HealthPoller] IncidentIQ responded with status ${res.status}`);
+      const res = await fetch(targetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(signal),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        console.warn(`[HealthPoller] IncidentIQ responded with status ${res.status}`);
+      }
+      return;
+    } catch (err) {
+      if (attempt < MAX_ATTEMPTS) {
+        console.warn(`[HealthPoller] Send attempt ${attempt} failed: ${err.message}. Retrying...`);
+      } else {
+        console.warn(`[HealthPoller] Failed to send signal to IncidentIQ after ${MAX_ATTEMPTS} attempts: ${err.message}`);
+      }
     }
-  } catch (err) {
-    console.warn(`[HealthPoller] Failed to send signal to IncidentIQ: ${err.message}`);
   }
 }
 
@@ -82,9 +92,9 @@ export async function probeTargets({ baseUrl, incidentIqUrl, slowThresholdMs } =
           const body = await res.text();
           const match = body.match(/<p>(.*?)<\/p>/i) || body.match(/"error"\s*:\s*"([^"]+)"/i) || body.match(/"message"\s*:\s*"([^"]+)"/i);
           if (match) {
-            errMessage = match[1];
+            errMessage = cleanHtmlText(match[1], 200);
           } else if (body) {
-            errMessage = body.slice(0, 150).replace(/\s+/g, ' ').trim();
+            errMessage = cleanHtmlText(body, 200);
           }
         } catch {
           // ignore body read error
@@ -92,7 +102,7 @@ export async function probeTargets({ baseUrl, incidentIqUrl, slowThresholdMs } =
       }
     } catch (err) {
       status = 500;
-      errMessage = err.message;
+      errMessage = cleanHtmlText(err.message, 200);
     }
 
     const latency = Date.now() - startTime;
@@ -109,6 +119,7 @@ export async function probeTargets({ baseUrl, incidentIqUrl, slowThresholdMs } =
       if (now - lastSentTime >= 60000) {
         lastSentMap.set(cooldownKey, now);
 
+        const cleanErr = cleanHtmlText(errMessage, 200);
         const signal = {
           source: 'poller',
           service: target.service || 'demo-lms',
@@ -116,7 +127,7 @@ export async function probeTargets({ baseUrl, incidentIqUrl, slowThresholdMs } =
           status,
           latency_ms: latency,
           message: isError
-            ? `Health probe failed with HTTP ${status}: ${errMessage || 'Service error'}`
+            ? `Health probe failed with HTTP ${status}: ${cleanErr || 'Service error'}`
             : `High latency detected: ${latency}ms (threshold: ${slowThreshold}ms)`,
           timestamp: new Date().toISOString()
         };

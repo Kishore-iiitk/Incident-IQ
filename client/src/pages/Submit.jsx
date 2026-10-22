@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Send, Sparkles, AlertCircle, FileText, ArrowRight, ShieldAlert, Upload, FileCode, Image, Mic, Mail, X } from 'lucide-react';
+import { createIncident } from '../api.js';
 
 const SAMPLE_INCIDENT_TEXT = "Students cannot open assignment pages since 2pm, the course page shows a 500 error and the upload button spins forever.";
 
@@ -79,7 +80,7 @@ export default function Submit({ onIncidentCreated }) {
     setError(null);
 
     try {
-      let response;
+      let result;
 
       if (hasFiles) {
         // Send multipart form-data
@@ -95,29 +96,16 @@ export default function Submit({ onIncidentCreated }) {
           formData.append('email', ef);
         }
 
-        response = await fetch('/incidents', {
-          method: 'POST',
-          body: formData
-        });
+        result = await createIncident(formData, true);
       } else {
         // Text-only JSON submission
-        response = await fetch('/incidents', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: text.trim(),
-            title: title.trim() || undefined,
-            source: 'user_submission'
-          })
+        result = await createIncident({
+          text: text.trim(),
+          title: title.trim() || undefined,
+          source: 'user_submission'
         });
       }
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || `Server responded with ${response.status}`);
-      }
-
-      const result = await response.json();
       onIncidentCreated(result.id);
     } catch (err) {
       console.error('Submission failed:', err);

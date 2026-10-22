@@ -38,6 +38,8 @@ export async function executePipeline({ incidentId, artifactId, text, files = []
   await incident.save();
   emitEvent('pipeline:started', { incidentId: incident._id.toString() });
 
+  const completedStages = Array.isArray(incident.stages_completed) ? [...incident.stages_completed] : [];
+
   const runStage = async (stageName, fn) => {
     emitEvent('pipeline:stage_start', {
       incidentId: incident._id.toString(),
@@ -47,6 +49,12 @@ export async function executePipeline({ incidentId, artifactId, text, files = []
 
     try {
       const result = await fn();
+      if (!completedStages.includes(stageName)) {
+        completedStages.push(stageName);
+      }
+      incident.stages_completed = completedStages;
+      await incident.save();
+
       emitEvent('pipeline:stage_end', {
         incidentId: incident._id.toString(),
         stage: stageName,
@@ -66,14 +74,18 @@ export async function executePipeline({ incidentId, artifactId, text, files = []
         timestamp: new Date().toISOString()
       });
 
-      // Update incident status to failed with error message
+      // Update incident status to failed with completed stages and failed stage info
       incident.status = 'failed';
+      incident.failed_stage = stageName;
+      incident.stages_completed = completedStages;
       incident.error_message = `Stage [${stageName}] failed: ${stageErr.message}`;
       await incident.save();
 
       emitEvent('pipeline:failed', {
         incidentId: incident._id.toString(),
         stage: stageName,
+        failed_stage: stageName,
+        stages_completed: completedStages,
         error: stageErr.message
       });
 
@@ -447,6 +459,9 @@ export async function executePipeline({ incidentId, artifactId, text, files = []
 
     // Mark incident ready for review
     incident.status = 'review';
+    incident.failed_stage = null;
+    incident.error_message = null;
+    incident.stages_completed = completedStages;
     incident.needs_review = true;
     if (writerResult?.bug_report?.title) {
       incident.title = writerResult.bug_report.title;

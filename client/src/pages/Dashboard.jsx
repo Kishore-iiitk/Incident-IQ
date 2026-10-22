@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertTriangle, CheckCircle2, Clock, Users, RefreshCw, Plus, Search, ChevronRight } from 'lucide-react';
 import SeverityBadge from '../components/SeverityBadge.jsx';
 import StatusBadge from '../components/StatusBadge.jsx';
+import { getIncidents, retryIncident } from '../api.js';
 
 const renderSourceBadge = (source) => {
   switch (source) {
@@ -63,15 +64,23 @@ export default function Dashboard({ onSelectIncident, onNewIncident, socket }) {
   const fetchIncidents = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/incidents');
-      if (res.ok) {
-        const data = await res.json();
-        setIncidents(data);
-      }
+      const data = await getIncidents();
+      setIncidents(data);
     } catch (err) {
       console.error('Failed to fetch incidents:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRetry = async (e, id) => {
+    e.stopPropagation();
+    try {
+      await retryIncident(id);
+      await fetchIncidents();
+    } catch (err) {
+      console.error('Retry failed:', err);
+      alert(err.message || 'Retry failed');
     }
   };
 
@@ -352,6 +361,16 @@ export default function Dashboard({ onSelectIncident, onNewIncident, socket }) {
                 <span className="text-[10px] text-slate-500">
                   {new Date(inc.created_at).toLocaleDateString()}
                 </span>
+                {inc.status === 'failed' && (
+                  <button
+                    onClick={(e) => handleRetry(e, inc._id)}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-semibold transition-colors mt-1 cursor-pointer shadow"
+                    title="Retry analysis pipeline"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Retry analysis</span>
+                  </button>
+                )}
                 <div className="hidden md:flex items-center gap-1 text-xs text-indigo-400 font-semibold mt-2">
                   <span>Inspect</span>
                   <ChevronRight className="w-3.5 h-3.5" />

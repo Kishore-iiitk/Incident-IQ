@@ -11,6 +11,7 @@ import { pipelineQueue, emitEvent } from './pipeline.js';
 import { dedupSignal } from './services/dedup.js';
 import { redactSensitiveData } from './utils/redactor.js';
 import { invalidateConfirmedIncidentsCache } from './rag/retrieve.js';
+import { cleanHtmlText } from './utils/htmlCleaner.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -163,21 +164,31 @@ export function createApp() {
             timestamp = new Date().toISOString()
           } = req.body;
 
-          // Apply redactor to message and stack
+          // Clean HTML tags and decode entities from message, then apply redactor
           const rawMessage = req.body.message || '';
           const rawStack = req.body.stack || '';
-          const cleanMessage = rawMessage ? redactSensitiveData(rawMessage) : '';
+          const htmlCleanedMessage = cleanHtmlText(rawMessage, 200);
+          const cleanMessage = htmlCleanedMessage ? redactSensitiveData(htmlCleanedMessage) : '';
           const cleanStack = rawStack ? redactSensitiveData(rawStack) : '';
 
           // Build short title
+          // Format for poller: "[POLLER] demo-lms /login: HTTP 500 - <clean message>"
           let derivedTitle = req.body.title;
           if (!derivedTitle) {
-            const detail = cleanMessage ? cleanMessage.slice(0, 50) : (status ? `HTTP ${status}` : (latency_ms ? `${latency_ms}ms latency` : 'Anomaly'));
-            derivedTitle = `[${source.toUpperCase()}] ${service}${endpoint ? ' ' + endpoint : ''} - ${detail}`;
+            let detail = cleanMessage;
+            if (source === 'poller') {
+              const probeMatch = cleanMessage.match(/^Health probe failed with HTTP \d+:\s*(.+)$/i);
+              if (probeMatch) {
+                detail = probeMatch[1];
+              }
+              const statusPrefix = status ? `HTTP ${status} - ` : '';
+              derivedTitle = `[POLLER] ${service}${endpoint ? ' ' + endpoint : ''}: ${statusPrefix}${detail || 'Service error'}`;
+            } else {
+              const detailShort = detail || (status ? `HTTP ${status}` : (latency_ms ? `${latency_ms}ms latency` : 'Anomaly'));
+              derivedTitle = `[${source.toUpperCase()}] ${service}${endpoint ? ' ' + endpoint : ''} - ${detailShort}`;
+            }
           }
-          if (derivedTitle.length > 80) {
-            derivedTitle = `${derivedTitle.substring(0, 77)}...`;
-          }
+          derivedTitle = cleanHtmlText(derivedTitle, 200);
 
           // Build short description for the pipeline
           const descriptionParts = [
@@ -205,7 +216,7 @@ export function createApp() {
             timestamp
           };
 
-          const { incident, artifact, isNew, fingerprint } = await dedupSignal(
+          const { incident, artifact, isNew, isRetried, fingerprint } = await dedupSignal(
             signalObj,
             derivedTitle,
             derivedDescription
@@ -227,6 +238,18 @@ export function createApp() {
               is_new: true,
               sources: incident.sources,
               message: 'Incident recorded and queued for analysis'
+            });
+          } else if (isRetried) {
+            emitEvent('incident:updated', incident);
+
+            return res.status(202).json({
+              id: incident._id.toString(),
+              status: incident.status,
+              fingerprint,
+              is_new: false,
+              is_retried: true,
+              sources: incident.sources,
+              message: 'Failed incident re-queued for analysis'
             });
           } else {
             emitEvent('incident:updated', incident);
@@ -380,6 +403,49 @@ export function createApp() {
       res.json(teams);
     } catch (err) {
       res.status(500).json({ error: 'Failed to fetch teams', details: err.message });
+    }
+  });
+
+  // POST /incidents/:id/retry - re-queue pipeline for a failed incident (only valid when status === 'failed')
+  app.post('/incidents/:id/retry', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const incident = await Incident.findById(id);
+      if (!incident) {
+        return res.status(404).json({ error: 'Incident not found' });
+      }
+
+      if (incident.status !== 'failed') {
+        return res.status(409).json({
+          error: `Incident cannot be retried because its status is "${incident.status}" (must be "failed")`
+        });
+      }
+
+      incident.retry_count = (incident.retry_count || 0) + 1;
+      incident.status = 'processing';
+      incident.error_message = null;
+      incident.failed_stage = null;
+      await incident.save();
+
+      emitEvent('incident:updated', incident);
+
+      const latestArtifact = await Artifact.findOne({ incident_id: incident._id }).sort({ received_at: -1 });
+
+      pipelineQueue.enqueue({
+        incidentId: incident._id,
+        artifactId: latestArtifact?._id || null,
+        text: incident.description
+      });
+
+      return res.status(202).json({
+        id: incident._id.toString(),
+        status: incident.status,
+        retry_count: incident.retry_count,
+        message: 'Incident analysis re-queued for processing'
+      });
+    } catch (err) {
+      console.error('[API] Error retrying incident:', err.message);
+      res.status(500).json({ error: 'Failed to retry incident', details: err.message });
     }
   });
 

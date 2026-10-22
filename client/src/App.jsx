@@ -4,6 +4,7 @@ import Navbar from './components/Navbar.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Submit from './pages/Submit.jsx';
 import IncidentDetail from './pages/IncidentDetail.jsx';
+import { getHealth, API_BASE } from './api.js';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -13,8 +14,7 @@ export default function App() {
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    // In dev, Vite proxies /socket.io to http://localhost:5000
-    const newSocket = io('/', {
+    const newSocket = io(API_BASE, {
       transports: ['websocket', 'polling']
     });
 
@@ -32,11 +32,8 @@ export default function App() {
   // Poll system health status
   const checkHealth = async () => {
     try {
-      const res = await fetch('/health');
-      if (res.ok) {
-        const data = await res.json();
-        setHealthInfo(data);
-      }
+      const data = await getHealth();
+      setHealthInfo(data);
     } catch {
       setHealthInfo({ database: 'disconnected', status: 'offline' });
     }
