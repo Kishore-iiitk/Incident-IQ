@@ -181,7 +181,7 @@ async function executeTransportCall({
         }
       });
     } catch (err) {
-      if (isDailyQuotaExhausted(err)) {
+      if (isDailyQuotaExhausted(err) || err.name === 'GeminiQuotaExceededError') {
         throw err;
       }
 
@@ -445,6 +445,7 @@ CRITICAL REQUIREMENT: Return ONLY strictly valid JSON adhering exactly to the sp
 }
 
 export function getGeminiClient() {
+  if (process.env.DEMO_MODE === 'true') return null;
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return null;
   return wrapGeminiClient(new GoogleGenAI({ apiKey }));

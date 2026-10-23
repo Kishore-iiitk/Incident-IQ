@@ -385,8 +385,8 @@ export async function processLog({ content, filePath, id = 'EV-01', geminiClient
     let summary = '';
     let confidence = 0.7;
 
-    // Try Gemini summarization
-    if (geminiClient) {
+    // Try Gemini summarization (bypassed in DEMO_MODE to avoid external calls)
+    if (geminiClient && process.env.DEMO_MODE !== 'true') {
       try {
         const redactedTemplates = redactSensitiveData(templateSummary);
         const prompt = `Summarize these server log templates concisely (2-3 sentences). Focus on errors, patterns, and likely root cause:

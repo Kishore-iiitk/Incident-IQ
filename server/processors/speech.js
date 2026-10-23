@@ -122,6 +122,22 @@ export async function processSpeech({ filePath, id, geminiClient }) {
       };
     }
 
+    // In DEMO_MODE, prevent external API calls for audio transcription
+    if (process.env.DEMO_MODE === 'true') {
+      return {
+        id,
+        source: 'voice_note',
+        type: 'audio',
+        summary: 'Audio transcription unavailable in DEMO_MODE (external API disabled)',
+        entities: [],
+        errors: [],
+        timestamps: [],
+        confidence: 0,
+        status: 'skipped',
+        reason: 'Audio transcription is unavailable in DEMO_MODE (external API disabled)'
+      };
+    }
+
     // Need Gemini client for audio processing
     if (!geminiClient) {
       return {
@@ -133,7 +149,7 @@ export async function processSpeech({ filePath, id, geminiClient }) {
         errors: [],
         timestamps: [],
         confidence: 0,
-        status: 'failed',
+        status: 'skipped',
         reason: 'Gemini client not available for audio transcription'
       };
     }

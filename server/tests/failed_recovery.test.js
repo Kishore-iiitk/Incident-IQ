@@ -110,40 +110,58 @@ describe('Failed Incident Recovery & Auto-Retry Tests (Problem 3)', () => {
   });
 
   test('a retry that succeeds sets status to "review"', async () => {
-    // Enable demo mode so pipeline runs fast and succeeds deterministically
-    process.env.DEMO_MODE = 'true';
+    // Preserve original environment variables to restore afterward
+    const savedEnv = {
+      DEMO_MODE: process.env.DEMO_MODE,
+      GEMINI_MODEL: process.env.GEMINI_MODEL,
+      GEMINI_MODEL_STRONG: process.env.GEMINI_MODEL_STRONG
+    };
 
-    const incident = await Incident.create({
-      title: 'LMS Assignment Upload & 500 Error Outage',
-      description: 'Students cannot open assignment pages since 2pm, the course page shows a 500 error and the upload button spins forever.',
-      status: 'failed',
-      failed_stage: 'triage',
-      stages_completed: ['text_processor', 'fusion', 'rag_retrieval'],
-      error_message: 'Temporary model error',
-      retry_count: 1,
-      auto_retry_count: 1,
-      created_at: new Date(),
-      last_seen: new Date()
-    });
+    try {
+      // Configure model settings and enable offline demo mode for mocked Gemini responses
+      process.env.DEMO_MODE = 'true';
+      process.env.GEMINI_MODEL = 'gemini-3.8-flash';
+      process.env.GEMINI_MODEL_STRONG = 'gemini-3.8-flash';
 
-    const artifact = await Artifact.create({
-      incident_id: incident._id,
-      kind: 'text',
-      source: 'user_submission'
-    });
+      const incident = await Incident.create({
+        title: 'LMS Assignment Upload & 500 Error Outage',
+        description: 'Students cannot open assignment pages since 2pm, the course page shows a 500 error and the upload button spins forever.',
+        status: 'failed',
+        failed_stage: 'triage',
+        stages_completed: ['text_processor', 'fusion', 'rag_retrieval'],
+        error_message: 'Temporary model error',
+        retry_count: 1,
+        auto_retry_count: 1,
+        created_at: new Date(),
+        last_seen: new Date()
+      });
 
-    await executePipeline({
-      incidentId: incident._id,
-      artifactId: artifact._id,
-      text: incident.description
-    });
+      const artifact = await Artifact.create({
+        incident_id: incident._id,
+        kind: 'text',
+        source: 'user_submission'
+      });
 
-    const finalIncident = await Incident.findById(incident._id);
-    assert.equal(finalIncident.status, 'review', 'A retry that succeeds must set status to "review"');
-    assert.equal(finalIncident.failed_stage, null, 'failed_stage must be cleared on success');
-    assert.equal(finalIncident.error_message, null, 'error_message must be cleared on success');
-    assert.ok(finalIncident.stages_completed.length > 0, 'stages_completed must be populated');
+      await executePipeline({
+        incidentId: incident._id,
+        artifactId: artifact._id,
+        text: incident.description
+      });
 
-    delete process.env.DEMO_MODE;
+      const finalIncident = await Incident.findById(incident._id);
+      assert.equal(finalIncident.status, 'review', 'A retry that succeeds must set status to "review"');
+      assert.equal(finalIncident.failed_stage, null, 'failed_stage must be cleared on success');
+      assert.equal(finalIncident.error_message, null, 'error_message must be cleared on success');
+      assert.ok(finalIncident.stages_completed.length > 0, 'stages_completed must be populated');
+    } finally {
+      // Restore original environment variables
+      for (const [key, value] of Object.entries(savedEnv)) {
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
+    }
   });
 });

@@ -133,4 +133,59 @@ describe('Speech Processor Unit Tests', () => {
       if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
     }
   });
+
+  test('processSpeech in DEMO_MODE prevents external Gemini calls and returns honest skipped status', async () => {
+    const audioPath = path.join(tempDir, 'demo_audio.m4a');
+    fs.writeFileSync(audioPath, Buffer.from('demo audio binary content'));
+
+    let externalCallMade = false;
+    const mockNetworkGemini = {
+      models: {
+        generateContent: async () => {
+          externalCallMade = true;
+          throw new Error('External API call must not be made in DEMO_MODE');
+        }
+      }
+    };
+
+    const prevDemoMode = process.env.DEMO_MODE;
+    process.env.DEMO_MODE = 'true';
+
+    try {
+      const evidence = await processSpeech({
+        filePath: audioPath,
+        id: 'EV-03',
+        geminiClient: mockNetworkGemini
+      });
+
+      assert.equal(externalCallMade, false, 'External Gemini API must NOT be called in DEMO_MODE');
+      assert.equal(evidence.status, 'skipped', 'Must return honest skipped status');
+      assert.equal(evidence.confidence, 0);
+      assert.equal(evidence.reason, 'Audio transcription is unavailable in DEMO_MODE (external API disabled)');
+      assert.ok(!evidence.speechResult, 'Must not invent fake speechResult or transcript');
+    } finally {
+      process.env.DEMO_MODE = prevDemoMode;
+      if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
+    }
+  });
+
+  test('processSpeech returns status skipped when geminiClient is absent', async () => {
+    const audioPath = path.join(tempDir, 'no_client_audio.m4a');
+    fs.writeFileSync(audioPath, Buffer.from('sample audio content'));
+
+    try {
+      const evidence = await processSpeech({
+        filePath: audioPath,
+        id: 'EV-03',
+        geminiClient: null
+      });
+
+      assert.equal(evidence.status, 'skipped');
+      assert.equal(evidence.confidence, 0);
+      assert.ok(evidence.reason.includes('Gemini client not available'));
+    } finally {
+      if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
+    }
+  });
 });
+

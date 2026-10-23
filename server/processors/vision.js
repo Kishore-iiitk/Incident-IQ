@@ -127,8 +127,8 @@ export async function processVision({ filePath, id, geminiClient }) {
     const base64Image = imageData.toString('base64');
     const mimeType = MIME_MAP[ext] || 'image/png';
 
-    // Try Gemini Vision
-    if (geminiClient) {
+    // Try Gemini Vision (bypassed in DEMO_MODE to avoid external calls)
+    if (geminiClient && process.env.DEMO_MODE !== 'true') {
       try {
         const model = process.env.GEMINI_MODEL || 'gemini-3.8-flash';
         const response = await geminiClient.models.generateContent({
